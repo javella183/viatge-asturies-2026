@@ -683,3 +683,76 @@
   .lodging-practical{grid-template-columns:1fr}
   .lodging-practical p{font-size:14px}
 }
+
+/* Llegibilitat ampliada i mapa familiar final */
+body{font-size:17px;line-height:1.55}
+.brand{font-size:15px}.main-nav button,.main-nav a{font-size:15px}
+.hero-lead{font-size:20px}.primary,.secondary{font-size:15px}
+.quick-strip small{font-size:10px}.quick-strip strong{font-size:15px}
+.section-heading>p,.panel-intro>p:last-child{font-size:16px}
+.route-rail small{font-size:11px}.route-rail strong{font-size:12px}
+.tabbar button{font-size:14px}.filters button{font-size:13px}
+.day-card-top span{font-size:11px}.day-card>small{font-size:12px}.day-card h3{font-size:27px}.day-card p{font-size:14px}.day-stats{font-size:11px}
+.detail-head p{font-size:12px}.detail-head>div>span{font-size:16px}
+.detail-facts small{font-size:10px}.detail-facts strong{font-size:22px}
+.timeline-item time{font-size:13px}.timeline-item strong{font-size:15px}.timeline-item p{font-size:14px}
+.info-card>span{font-size:11px}.info-card p,.info-card li{font-size:14px}
+.day-switch button{font-size:13px}
+.shopping-list small{font-size:11px}.shopping-list h3{font-size:27px}.shopping-list p{font-size:14px}
+.menu-bank span{font-size:13px}.allergy-note b,.allergy-note p{font-size:13px}
+.check-item{font-size:14px}.table-row{font-size:14px}.table-row.table-head{font-size:10px}
+.contact-card small{font-size:10px}.contact-card p{font-size:14px}
+.budget-hero p,.budget-note{font-size:14px}
+.lodging-highlights span{font-size:13px}.lodging-card li,.lodging-card p{font-size:14px}.lodging-practical p{font-size:14px}
+footer p,footer a{font-size:13px}
+
+.route-map-banner{position:relative;min-height:clamp(650px,56vw,940px);overflow:hidden;background:#e7e2d5}
+.route-map-figure{position:absolute;inset:0;margin:0}
+.route-map-figure img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.route-map-figure:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 42%,rgba(247,245,237,.06) 55%,rgba(247,245,237,.44) 100%);pointer-events:none}
+.route-map-figure figcaption{position:absolute;z-index:2;left:clamp(20px,4vw,65px);bottom:28px;padding:9px 13px;border-radius:4px;background:rgba(11,63,56,.88);color:white;font-size:13px;font-weight:800}
+.route-map-copy{position:absolute;z-index:3;right:clamp(22px,5vw,82px);bottom:clamp(40px,6vw,88px);width:min(47%,720px);padding:clamp(24px,3vw,42px);border:1px solid rgba(18,59,53,.12);border-radius:10px;background:rgba(255,253,248,.91);backdrop-filter:blur(10px);box-shadow:0 25px 70px rgba(11,63,56,.18)}
+.route-map-copy h2{margin:0;font-family:Georgia,serif;font-size:clamp(38px,4vw,62px);font-weight:400;line-height:1.02;letter-spacing:-.035em;color:var(--deep)}
+.route-map-copy>p:not(.kicker){max-width:650px;margin:17px 0 0;color:#48625a;font-size:16px;line-height:1.65}
+.route-map-stops{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:23px}
+.route-map-stops button{display:grid;grid-template-columns:27px auto 1fr;align-items:center;gap:7px;min-height:48px;padding:8px 10px;border:1px solid #ccd8d1;border-radius:6px;background:rgba(255,255,255,.78);text-align:left;cursor:pointer;transition:.2s ease}
+.route-map-stops button:hover{border-color:var(--green);background:white;transform:translateY(-2px)}
+.route-map-stops button span{font-size:18px}.route-map-stops button b{font-size:12px;color:var(--green);white-space:nowrap}.route-map-stops button small{font-size:11px;line-height:1.3;color:var(--deep)}
+
+@media(max-width:900px){
+  .route-map-banner{min-height:0;padding:0;background:#f0ece1}
+  .route-map-figure{position:relative;aspect-ratio:16/9}
+  .route-map-figure:after{background:linear-gradient(0deg,rgba(11,63,56,.22),transparent 38%)}
+  .route-map-figure figcaption{left:20px;bottom:18px}
+  .route-map-copy{position:relative;right:auto;bottom:auto;width:auto;margin:-2px 18px 38px;padding:30px 26px;background:var(--paper)}
+}
+
+@media(max-width:600px){
+  body{font-size:17px}
+  .brand{font-size:12px}.main-nav button,.main-nav a{font-size:16px}
+  .hero-lead{font-size:17px;line-height:1.7}.primary,.secondary{font-size:14px}
+  .quick-strip small{font-size:10px}.quick-strip strong{font-size:12px}
+  .section-heading>p,.panel-intro>p:last-child{font-size:15px;line-height:1.7}
+  .route-rail small{font-size:11px}.route-rail strong{font-size:12px}
+  .tabbar button,.filters button{font-size:14px}
+  .day-card{min-height:225px}.day-card-top span{font-size:11px}.day-card>small{font-size:12px}.day-card h3{font-size:22px}.day-card p{font-size:13px;line-height:1.55}.day-stats{font-size:11px}
+  .detail-head p{font-size:11px}.detail-head>div>span{font-size:15px}
+  .detail-facts small{font-size:9px}.detail-facts strong{font-size:16px}
+  .timeline-item time{font-size:13px}.timeline-item strong{font-size:16px}.timeline-item p{font-size:15px;line-height:1.6}
+  .info-card>span{font-size:11px}.info-card p,.info-card li{font-size:15px;line-height:1.65}
+  .day-switch button{font-size:13px}
+  .shopping-list small{font-size:11px}.shopping-list h3{font-size:25px}.shopping-list p{font-size:15px}
+  .menu-bank span{font-size:13px}.allergy-note b,.allergy-note p{font-size:14px}
+  .check-item{font-size:15px}.table-row{font-size:14px}.contact-card p{font-size:15px}
+  .budget-hero p,.budget-note{font-size:14px}
+  input,select,textarea{font-size:16px}
+  footer p,footer a{font-size:13px}
+  .mobile-nav button{font-size:10px}.mobile-nav button span{font-size:19px}
+  .route-map-figure{aspect-ratio:1.35/1}.route-map-figure img{object-position:35% center}
+  .route-map-figure figcaption{left:12px;bottom:12px;font-size:11px}
+  .route-map-copy{margin:0;padding:34px 18px 42px;border:0;border-radius:0;box-shadow:none}
+  .route-map-copy h2{font-size:42px}.route-map-copy>p:not(.kicker){font-size:15px}
+  .route-map-stops{grid-template-columns:1fr;gap:7px}
+  .route-map-stops button{grid-template-columns:29px 48px 1fr;min-height:55px;padding:10px 12px}
+  .route-map-stops button span{font-size:20px}.route-map-stops button b{font-size:13px}.route-map-stops button small{font-size:13px}
+}

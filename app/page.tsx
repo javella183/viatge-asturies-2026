@@ -173,9 +173,21 @@ type VisitDetails = {
 const commonsSource = (filename: string) => `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(filename)}`;
 const placeImage = (filename: string) => `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/places/${filename}`;
 const familyCutout = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/family/familia-avella-ferrer.png`;
+const routeMapImage = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/mapa-ruta-avella-ferrer.png`;
 const elCasalImage = placeImage("el-casal.jpg");
 const elCasalBooking = "https://www.booking.com/hotel/es/apartamentos-el-casal.es.html";
 const elCasalTourism = "https://www.turismoasturias.es/organiza-tu-viaje/donde-dormir/turismo-rural/apartamentos-rurales/el-casal";
+
+const routeMapStops = [
+  { day: 1, label: "Xaló · Arévalo · La Callezuela" },
+  { day: 2, label: "Avilés" },
+  { day: 3, label: "Cudillero · Cap Vidio" },
+  { day: 4, label: "MUJA · Llastres · Tazones" },
+  { day: 5, label: "Covadonga · Llanes" },
+  { day: 6, label: "Oviedo · Naranco" },
+  { day: 7, label: "Salinas · Platja del Silenci" },
+  { day: 8, label: "Astúries · Xaló" },
+];
 
 const visitDetailsByTitle: Record<string, VisitDetails> = {
   "Arribada a El Casal": {
@@ -987,7 +999,20 @@ export default function Home() {
         </div>}
       </section>
 
-      <section className="base-banner"><div><p className="kicker">LA NOSTRA BASE</p><h2>La Callezuela no és un nucli comercial.</h2><p>Desdejuneu normalment a casa i planifiqueu el pa i la compra. A peu teniu el centre del poble, Sollovio i trams de la Ruta dels Molins; El Casal té piscina, jardí, zona infantil, futbolí, barbacoa i taules exteriors.</p><div className="base-links"><a href={contactById.casal.map} target="_blank" rel="noreferrer">Allotjament en Maps ↗</a><a href="tel:+34699862203">☎ 699 862 203</a><a href={contactById.chigre.map} target="_blank" rel="noreferrer">El Chigre ↗</a></div></div></section>
+      <section className="route-map-banner" aria-labelledby="route-map-title">
+        <figure className="route-map-figure">
+          <img src={routeMapImage} alt="Mapa il·lustrat del viatge familiar des de Xaló fins a Astúries amb el Volkswagen Tiguan" loading="lazy"/>
+          <figcaption>La ruta dels Avellà-Ferrer · Estiu 2026</figcaption>
+        </figure>
+        <div className="route-map-copy">
+          <p className="kicker">EL NOSTRE MAPA DE RECORDS</p>
+          <h2 id="route-map-title">Huit dies, una ruta en família.</h2>
+          <p>Prem una xinxeta per tornar directament a l’itinerari d’eixe dia i veure les visites, els aparcaments i les missions fotogràfiques.</p>
+          <div className="route-map-stops">
+            {routeMapStops.map((stop) => <button key={stop.day} onClick={() => chooseDay(stop.day)}><span>📍</span><b>Dia {stop.day}</b><small>{stop.label}</small></button>)}
+          </div>
+        </div>
+      </section>
 
       <footer><div className="brand"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></div><p>Josep, Caty, Lluís i Cesc · 16–23 d’agost</p><a href="#inici">Tornar amunt ↑</a></footer>
 

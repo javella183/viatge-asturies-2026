@@ -6,6 +6,8 @@ Inclou els itineraris detallats dels huit dies, horaris, rutes i ubicacions de G
 
 La secció **El nostre allotjament** reuneix la reserva d'Apartamentos El Casal, la ubicació, el telèfon, una fotografia real, l'equipament confirmat i les preguntes pendents per al propietari. La mateixa fitxa apareix també com a desplegable en l'arribada del Dia 1.
 
+La tipografia està ampliada per facilitar la lectura en ordinador i mòbil. Al final de la guia hi ha el mapa il·lustrat de la ruta familiar amb huit xinxetes interactives que tornen directament a l'itinerari de cada dia.
+
 ## Control local del viatge
 
 La guia incorpora un control de despeses i pressupost, resum per dia, categoria, forma de pagament i persona que paga, llistes editables, una llista de la compra i un àlbum familiar guiat amb 23 missions fotogràfiques. Les dades de text es guarden amb `localStorage` i les fotos, reduïdes automàticament, en `IndexedDB`.
