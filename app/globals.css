@@ -189,3 +189,121 @@
   .mobile-nav button{font-size:10px}
   .mobile-nav button span{font-size:18px}
 }
+
+/* Control local: despeses, llistes i compra editable */
+.add-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:30px 0 38px;padding:22px;background:#f1f4ed;border:1px solid var(--line);border-radius:7px}
+.add-form label{display:flex;flex-direction:column;gap:7px;min-width:0}
+.add-form label>span{font-size:9px;letter-spacing:.12em;font-weight:900;color:var(--green)}
+.add-form input,.add-form select{width:100%;height:45px;border:1px solid #abbdb5;border-radius:5px;background:white;color:var(--ink);padding:0 12px;font-size:13px;outline:none}
+.add-form input:focus,.add-form select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(15,116,100,.12)}
+.form-primary{align-self:end;min-height:45px;border:0;border-radius:5px;background:var(--deep);color:white;padding:0 18px;font-size:11px;font-weight:900;cursor:pointer}
+.form-primary:hover{background:var(--green)}
+.shopping-add{grid-template-columns:1.35fr 1fr 1fr auto}
+.shopping-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:55px}
+.shopping-groups>section,.summary-card{border:1px solid var(--line);border-radius:7px;background:#fffdf8;padding:20px}
+.shopping-group-head,.summary-title{display:flex;align-items:center;justify-content:space-between;gap:15px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.shopping-group-head h3,.summary-title h3{font-family:Georgia,serif;font-size:21px;font-weight:400;margin:0}
+.shopping-group-head span,.summary-title span{display:grid;place-items:center;min-width:30px;height:30px;padding:0 7px;border-radius:20px;background:#edf4ef;color:var(--green);font-size:10px;font-weight:900}
+.managed-item,.managed-check-row{display:flex;align-items:center;gap:8px;border-bottom:1px solid #e2e8e4}
+.managed-item:last-child,.managed-check-row:last-child{border-bottom:0}
+.managed-item.done{color:#687b74;background:#f5f7f2}
+.managed-toggle{flex:1;display:flex;align-items:center;gap:10px;min-width:0;border:0;background:none;text-align:left;padding:13px 4px;cursor:pointer}
+.managed-toggle>b{font-size:13px}
+.managed-toggle>span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+.managed-toggle small{font-size:10px;color:var(--muted)}
+.managed-item.done b{text-decoration:line-through}
+.item-actions{display:flex;gap:4px;flex:0 0 auto}
+.item-actions button,.edit-mini,.delete-mini{width:32px;height:32px;border:1px solid var(--line);border-radius:4px;background:white;color:var(--muted);cursor:pointer;font-size:15px}
+.item-actions button:hover,.edit-mini:hover{border-color:var(--green);color:var(--green)}
+.item-actions button:last-child:hover,.delete-mini:hover{border-color:#b94b42;color:#b94b42}
+.store-heading{margin:20px 0 0}
+.compact-stores{margin-top:20px}
+.task-add{grid-template-columns:2fr 1fr auto;margin-bottom:28px}
+.managed-check-row .check-item{flex:1;min-width:0}
+.managed-check-row .edit-mini,.managed-check-row .delete-mini{flex:0 0 29px;width:29px;height:29px;font-size:13px}
+
+.control-panel{padding-top:55px}
+.control-summary{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;margin:40px 0;background:var(--deep);color:white;border-radius:8px;padding:24px}
+.budget-editor,.control-stat{min-height:130px;padding:20px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:rgba(255,255,255,.05)}
+.budget-editor>label,.control-stat>small{display:block;font-size:9px;letter-spacing:.14em;font-weight:900;color:var(--lime)}
+.budget-editor>div{display:flex;align-items:center;gap:7px;margin:12px 0 7px}
+.budget-editor input{width:150px;max-width:80%;border:0;border-bottom:1px solid rgba(255,255,255,.45);background:transparent;color:white;font-family:Georgia,serif;font-size:37px;outline:none}
+.budget-editor>div span{font-family:Georgia,serif;font-size:28px;color:var(--lime)}
+.budget-editor>small,.control-stat>span{font-size:10px;color:#c9dad5}
+.control-stat strong{display:block;font-family:Georgia,serif;font-size:31px;font-weight:400;margin:15px 0 7px}
+.control-stat.over{background:#643d34;border-color:#97675b}
+.budget-progress{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:18px}
+.budget-progress i{height:11px;background:rgba(255,255,255,.15);border-radius:20px;overflow:hidden}
+.budget-progress em{display:block;height:100%;background:var(--lime);border-radius:20px;transition:width .25s ease}
+.budget-progress>span{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.budget-progress b{font-family:Georgia,serif;font-size:22px;color:var(--lime)}
+.budget-progress small{font-size:9px;color:#d4e2de}
+.expense-entry{padding:28px 0 8px;border-bottom:1px solid var(--line)}
+.expense-form{grid-template-columns:.7fr 1.5fr 1.1fr .75fr}
+.expense-form .note-field{grid-column:1/4}
+.expense-form .form-primary{grid-column:4}
+.control-grids{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:42px 0}
+.summary-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:12px 2px;border:0;border-bottom:1px solid #e2e8e4;background:transparent;text-align:left;font-size:11px}
+.summary-row:last-child{border-bottom:0}
+.summary-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#4b625b}
+.summary-row b{white-space:nowrap;font-size:11px}
+.day-row{cursor:pointer}
+.day-row:hover span{color:var(--green)}
+.expense-history{margin-top:45px}
+.expense-history>.subheading>strong{font-family:Georgia,serif;font-size:28px;color:var(--green)}
+.expense-list{border-top:1px solid var(--line)}
+.expense-list article{display:grid;grid-template-columns:46px 1fr auto auto;align-items:center;gap:16px;padding:16px 5px;border-bottom:1px solid var(--line)}
+.expense-day{width:42px;height:42px;border-radius:50%;background:#edf4ef;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--green)}
+.expense-day small{font-size:7px;font-weight:900}
+.expense-day b{font-family:Georgia,serif;font-size:18px}
+.expense-copy{min-width:0}
+.expense-copy>small{font-size:8px;letter-spacing:.1em;font-weight:900;color:var(--green)}
+.expense-copy h4{font-size:13px;margin:3px 0}
+.expense-copy p{font-size:10px;color:var(--muted);margin:0}
+.expense-list article>strong{font-family:Georgia,serif;font-size:18px;white-space:nowrap}
+.data-tools{display:flex;align-items:center;justify-content:space-between;gap:35px;margin-top:45px;padding:28px;background:#edf3e8;border-left:4px solid var(--green);border-radius:5px}
+.data-tools>div:first-child{max-width:600px}
+.data-tools h3{font-family:Georgia,serif;font-size:25px;font-weight:400;margin:4px 0 8px}
+.data-tools p:not(.kicker){font-size:11px;line-height:1.6;color:var(--muted);margin:0}
+.tool-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.tool-actions button{min-height:41px;border:1px solid #9db1a8;border-radius:4px;background:white;padding:0 13px;font-size:10px;font-weight:900;cursor:pointer}
+.tool-actions button:first-child{background:var(--deep);border-color:var(--deep);color:white}
+
+@media(max-width:900px){
+  .add-form,.shopping-add,.expense-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .form-primary,.expense-form .form-primary{grid-column:auto}
+  .expense-form .note-field{grid-column:1/2}
+  .control-summary{grid-template-columns:1fr 1fr}
+  .budget-editor{grid-column:1/-1}
+  .data-tools{align-items:flex-start;flex-direction:column}
+  .tool-actions{justify-content:flex-start}
+}
+
+@media(max-width:600px){
+  .control-panel{padding-top:30px}
+  .add-form,.shopping-add,.task-add,.expense-form{grid-template-columns:1fr;padding:16px;margin:22px 0 30px}
+  .expense-form .note-field,.expense-form .form-primary{grid-column:auto}
+  .add-form label>span{font-size:11px}
+  .add-form input,.add-form select{font-size:16px;height:49px}
+  .form-primary{min-height:49px;font-size:13px}
+  .shopping-groups,.control-grids{grid-template-columns:1fr}
+  .shopping-groups>section{padding:16px}
+  .managed-toggle b{font-size:15px}
+  .managed-toggle small{font-size:12px}
+  .control-summary{grid-template-columns:1fr;padding:16px;margin:28px 0}
+  .budget-editor,.control-stat{grid-column:auto;min-height:auto}
+  .budget-progress{grid-template-columns:1fr;gap:8px}
+  .budget-progress>span{justify-content:space-between}
+  .budget-progress small{font-size:11px}
+  .summary-row,.summary-row b{font-size:13px}
+  .expense-list article{grid-template-columns:42px minmax(0,1fr) auto;gap:10px}
+  .expense-list article>.item-actions{grid-column:2/4;justify-content:flex-end}
+  .expense-copy>small{font-size:10px}
+  .expense-copy h4{font-size:15px}
+  .expense-copy p{font-size:12px}
+  .expense-list article>strong{font-size:17px}
+  .data-tools{padding:22px 18px}
+  .data-tools p:not(.kicker){font-size:13px}
+  .tool-actions{width:100%}
+  .tool-actions button{flex:1 1 140px;font-size:12px}
+}

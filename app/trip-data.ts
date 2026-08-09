@@ -362,3 +362,4 @@ export const days: Day[] = [
     links: [{ label: "Trànsit DGT", href: "https://www.dgt.es/conoce-el-estado-del-trafico/informacion-e-incidencias-de-trafico/", kind: "web" }],
   },
 ];
+
