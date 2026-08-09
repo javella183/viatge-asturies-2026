@@ -9,24 +9,33 @@ export type StoredPhotoMemory = {
   blob: Blob;
 };
 
+export type StoredReceipt = {
+  id: string;
+  expenseId: string;
+  createdAt: string;
+  blob: Blob;
+};
+
 const DATABASE = "asturies-family-memories-v1";
-const STORE = "photos";
+const PHOTO_STORE = "photos";
+const RECEIPT_STORE = "receipts";
 
 const openDatabase = () => new Promise<IDBDatabase>((resolve, reject) => {
-  const request = indexedDB.open(DATABASE, 1);
+  const request = indexedDB.open(DATABASE, 2);
   request.onupgradeneeded = () => {
     const database = request.result;
-    if (!database.objectStoreNames.contains(STORE)) database.createObjectStore(STORE, { keyPath: "id" });
+    if (!database.objectStoreNames.contains(PHOTO_STORE)) database.createObjectStore(PHOTO_STORE, { keyPath: "id" });
+    if (!database.objectStoreNames.contains(RECEIPT_STORE)) database.createObjectStore(RECEIPT_STORE, { keyPath: "id" });
   };
   request.onsuccess = () => resolve(request.result);
   request.onerror = () => reject(request.error ?? new Error("No s’ha pogut obrir l’àlbum local."));
 });
 
-const useStore = async <T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>) => {
+const useStore = async <T>(storeName: string, mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>) => {
   const database = await openDatabase();
   return new Promise<T>((resolve, reject) => {
-    const transaction = database.transaction(STORE, mode);
-    const request = action(transaction.objectStore(STORE));
+    const transaction = database.transaction(storeName, mode);
+    const request = action(transaction.objectStore(storeName));
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error("No s’ha pogut guardar la foto."));
     transaction.oncomplete = () => database.close();
@@ -34,10 +43,15 @@ const useStore = async <T>(mode: IDBTransactionMode, action: (store: IDBObjectSt
   });
 };
 
-export const getAllPhotoMemories = () => useStore<StoredPhotoMemory[]>("readonly", (store) => store.getAll());
-export const putPhotoMemory = (memory: StoredPhotoMemory) => useStore<IDBValidKey>("readwrite", (store) => store.put(memory));
-export const deletePhotoMemory = (id: string) => useStore<undefined>("readwrite", (store) => store.delete(id));
-export const clearPhotoMemories = () => useStore<undefined>("readwrite", (store) => store.clear());
+export const getAllPhotoMemories = () => useStore<StoredPhotoMemory[]>(PHOTO_STORE, "readonly", (store) => store.getAll());
+export const putPhotoMemory = (memory: StoredPhotoMemory) => useStore<IDBValidKey>(PHOTO_STORE, "readwrite", (store) => store.put(memory));
+export const deletePhotoMemory = (id: string) => useStore<undefined>(PHOTO_STORE, "readwrite", (store) => store.delete(id));
+export const clearPhotoMemories = () => useStore<undefined>(PHOTO_STORE, "readwrite", (store) => store.clear());
+
+export const getAllReceipts = () => useStore<StoredReceipt[]>(RECEIPT_STORE, "readonly", (store) => store.getAll());
+export const putReceipt = (receipt: StoredReceipt) => useStore<IDBValidKey>(RECEIPT_STORE, "readwrite", (store) => store.put(receipt));
+export const deleteReceipt = (id: string) => useStore<undefined>(RECEIPT_STORE, "readwrite", (store) => store.delete(id));
+export const clearReceipts = () => useStore<undefined>(RECEIPT_STORE, "readwrite", (store) => store.clear());
 
 export const compressPhoto = (file: File) => new Promise<Blob>((resolve, reject) => {
   const image = new Image();

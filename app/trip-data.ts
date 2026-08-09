@@ -51,7 +51,7 @@ export const maps = (query: string) => `https://www.google.com/maps/search/?api=
 
 export const tasks: Task[] = [
   { id: "casal-arribada", label: "Avisar El Casal de l’arribada i acordar l’entrega de claus", group: "reserves" },
-  { id: "casal-cuina", label: "Confirmar cafetera, oli, sal, estris, congelador i productes de bany", group: "abans" },
+  { id: "casal-cuina", label: "Confirmar amb El Casal: cafetera, oli, sal, congelador, tovalloles de piscina, productes de bany i horari de la piscina", group: "abans" },
   { id: "tigu-revisio", label: "Revisar Tiguan: pneumàtics, oli, refrigerant i líquid dels eixugaparabrises", group: "abans" },
   { id: "v16-docs", label: "Carregar balisa V-16, DNI, targetes sanitàries i documentació", group: "abans" },
   { id: "rutes-offline", label: "Descarregar rutes, reserves i captures als dos mòbils", group: "abans" },
@@ -362,4 +362,3 @@ export const days: Day[] = [
     links: [{ label: "Trànsit DGT", href: "https://www.dgt.es/conoce-el-estado-del-trafico/informacion-e-incidencias-de-trafico/", kind: "web" }],
   },
 ];
-

@@ -5,12 +5,17 @@ import { contacts, days, maps, shops, tasks, type Contact } from "./trip-data";
 import {
   blobToDataUrl,
   clearPhotoMemories,
+  clearReceipts,
   compressPhoto,
   dataUrlToBlob,
   deletePhotoMemory,
+  deleteReceipt,
   getAllPhotoMemories,
+  getAllReceipts,
   putPhotoMemory,
+  putReceipt,
   type StoredPhotoMemory,
+  type StoredReceipt,
 } from "./photo-memory";
 
 type TabKey = "itinerari" | "compres" | "maleta" | "reserves" | "control";
@@ -23,12 +28,15 @@ type Expense = {
   category: string;
   amount: number;
   note: string;
+  paymentMethod: string;
+  paidBy: string;
   createdAt: string;
 };
 
 type CustomTask = { id: string; label: string; group: string };
 type ShoppingItem = { id: string; label: string; quantity: string; group: string; checked: boolean };
 type PhotoMemory = StoredPhotoMemory & { url: string };
+type ReceiptPhoto = StoredReceipt & { url: string };
 type PhotoMission = { people: string; prompt: string };
 
 const STORAGE = {
@@ -45,21 +53,24 @@ const categories = [
   "Entrades i activitats", "Aparcament i peatges", "Capritxos", "Altres i imprevistos",
 ];
 
-const shoppingGroups = ["Des de Xaló", "Compra principal", "Desdejunis", "Pícnics", "Sopars", "Altres"];
+const paymentMethods = ["Per indicar", "Efectiu", "Targeta de dèbit", "Targeta de crèdit"];
+const payers = ["Per indicar", "Josep", "Caty"];
+const shoppingGroups = ["Des de Xaló", "Alimerka Avilés", "Alimerka El Prestín", "Desdejunis", "Pícnics", "Sopars", "Altres"];
+const shopGroupById: Record<string, string> = { xalo: "Des de Xaló", aviles: "Alimerka Avilés", prestin: "Alimerka El Prestín" };
 
 const initialExpenses: Expense[] = [
-  { id: "allotjament-el-casal", day: 1, concept: "Apartamentos El Casal", category: "Allotjament", amount: 725, note: "7 nits", createdAt: "2026-08-09T12:00:00.000Z" },
+  { id: "allotjament-el-casal", day: 1, concept: "Apartamentos El Casal", category: "Allotjament", amount: 725, note: "7 nits", paymentMethod: "Per indicar", paidBy: "Per indicar", createdAt: "2026-08-09T12:00:00.000Z" },
 ];
 
 const initialShopping: ShoppingItem[] = [
   { id: "shop-cafe", label: "Café", quantity: "per a 8 dies", group: "Des de Xaló", checked: false },
   { id: "shop-pernil", label: "Pernil serrà", quantity: "1 paquet", group: "Des de Xaló", checked: false },
-  { id: "shop-pa", label: "Pa per a congelar", quantity: "segons espai", group: "Compra principal", checked: false },
-  { id: "shop-llet", label: "Llet", quantity: "2–3 litres", group: "Compra principal", checked: false },
-  { id: "shop-tomaca", label: "Tomaca, encisam i olives", quantity: "per a ensalades", group: "Compra principal", checked: false },
+  { id: "shop-pa", label: "Pa per a congelar", quantity: "segons espai", group: "Alimerka Avilés", checked: false },
+  { id: "shop-llet", label: "Llet", quantity: "2–3 litres", group: "Alimerka Avilés", checked: false },
+  { id: "shop-tomaca", label: "Tomaca, encisam i olives", quantity: "per a ensalades", group: "Alimerka Avilés", checked: false },
   { id: "shop-pollastre", label: "Pit de pollastre i altra carn", quantity: "2 menjars", group: "Sopars", checked: false },
   { id: "shop-pasta", label: "Pasta i tonyina", quantity: "per a pícnic", group: "Pícnics", checked: false },
-  { id: "shop-aigua", label: "Aigua", quantity: "garrafes i botelles", group: "Compra principal", checked: false },
+  { id: "shop-aigua", label: "Aigua", quantity: "garrafes i botelles", group: "Alimerka Avilés", checked: false },
 ];
 
 const taskById = Object.fromEntries(tasks.map((task) => [task.id, task]));
@@ -162,8 +173,15 @@ type VisitDetails = {
 const commonsSource = (filename: string) => `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(filename)}`;
 const placeImage = (filename: string) => `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/places/${filename}`;
 const familyCutout = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/family/familia-avella-ferrer.png`;
+const elCasalImage = placeImage("el-casal.jpg");
+const elCasalBooking = "https://www.booking.com/hotel/es/apartamentos-el-casal.es.html";
+const elCasalTourism = "https://www.turismoasturias.es/organiza-tu-viaje/donde-dormir/turismo-rural/apartamentos-rurales/el-casal";
 
 const visitDetailsByTitle: Record<string, VisitDetails> = {
+  "Arribada a El Casal": {
+    description: "El Casal és un antic caseriu restaurat l’any 2015, situat en un entorn rural tranquil de La Callezuela. La finca té piscina exterior, jardí, parc infantil, barbacoa, futbolí, taules exteriors i aparcament; serà la nostra base durant les set nits.",
+    image: elCasalImage, imageAlt: "Apartamentos rurals El Casal a La Callezuela, Illas", source: elCasalTourism,
+  },
   "Passeig mudèjar": {
     description: "La Plaça de la Villa concentra l’essència mudèjar d’Arévalo: porxos, façanes de rajola i les esglésies de Santa María i San Martín. És un passeig curt i molt visual per a estirar les cames sense convertir la parada en una visita llarga.",
     image: placeImage("arevalo.jpg"), imageAlt: "Plaça de la Villa d’Arévalo", source: commonsSource("Arévalo-Plaza de la Villa-y San Martín.JPG"),
@@ -256,6 +274,35 @@ const visitDetailsByTitle: Record<string, VisitDetails> = {
     description: "La parada de tornada permet dinar i estirar les cames en una zona amb serveis. Si aneu bé de temps, l’exterior del castell de la Mota és una visita curta i vistosa abans de continuar cap a Madrid.",
     image: placeImage("medina.jpg"), imageAlt: "Castell de la Mota a Medina del Campo", source: commonsSource("Castillo de La Mota, en Medina del Campo (6972495918).jpg"),
   },
+};
+
+type ParkingDetails = { name: string; cost: string; map: string };
+
+const parkingByTitle: Record<string, ParkingDetails> = {
+  "Arribada a El Casal": { name: "Aparcament privat d’El Casal", cost: "Inclòs", map: maps("Apartamentos El Casal Illas Asturias") },
+  "Passeig mudèjar": { name: "Aparcament del Castell d’Arévalo", cost: "Gratuït", map: maps("Aparcamiento Castillo de Arévalo") },
+  "Centro Niemeyer": { name: "Aparcament del Centro Niemeyer", cost: "0–2 € orientatiu", map: maps("Parking Centro Niemeyer Avilés") },
+  "Avilés històric · 2,5–3 km": { name: "Aparcament de La Magdalena", cost: "Gratuït · uns 10 min a peu", map: maps("Aparcamiento La Magdalena Avilés") },
+  "Salinas + Museu de les Àncores": { name: "Zona de Pablo Laloux / La Peñona", cost: "Gratuït al carrer", map: maps("Parking Museo de las Anclas Salinas Asturias") },
+  "Cudillero · passeig curt": { name: "Aparcament del Port de Cudillero", cost: "2,50 € al dia orientatiu", map: maps("Parking Puerto Cudillero") },
+  "Cap Vidio": { name: "Aparcament del Far de Vidio", cost: "Gratuït", map: maps("Parking Faro Cabo Vidio") },
+  "Platja de San Pedro": { name: "Aparcament de San Pedro de la Ribera", cost: "Gratuït habitualment", map: maps("Parking Playa San Pedro de la Ribera") },
+  "Platja del Silenci · opcional": { name: "Aparcament del mirador", cost: "0–3 € orientatiu", map: maps("Parking Mirador Playa del Silencio") },
+  "MUJA": { name: "Aparcament del MUJA", cost: "Gratuït", map: maps("Parking Museo Jurásico Asturias MUJA") },
+  "Jardí exterior": { name: "Aparcament del MUJA", cost: "Gratuït", map: maps("Parking Museo Jurásico Asturias MUJA") },
+  "Llastres · passeig": { name: "Aparcament del mirador de San Roque", cost: "Gratuït habitualment", map: maps("Parking Mirador San Roque Lastres") },
+  "Tazones": { name: "Aparcament municipal de Tazones", cost: "3–5 € orientatiu en temporada", map: maps("Parking Municipal Tazones") },
+  "Buferrera": { name: "P1 Cangas de Onís + bus", cost: "3 € al dia + bitllet de bus", map: maps("Parking P1 Estación Autobuses Cangas de Onís") },
+  "Ruta curta familiar": { name: "P1 Cangas de Onís + bus", cost: "3 € al dia + bitllet de bus", map: maps("Parking P1 Estación Autobuses Cangas de Onís") },
+  "Covadonga": { name: "P1 Cangas de Onís", cost: "Cotxe estacionat allí · trajecte amb bus", map: maps("Parking P1 Estación Autobuses Cangas de Onís") },
+  "Cangas de Onís": { name: "P1 Estació d’Autobusos", cost: "3 € al dia", map: maps("Parking P1 Estación Autobuses Cangas de Onís") },
+  "Cuevas del Mar": { name: "Aparcament de Cuevas del Mar", cost: "3–5 € orientatiu en temporada", map: maps("Parking Playa Cuevas del Mar") },
+  "Ribadesella · 2,5–3 km": { name: "Campu Les Rolles", cost: "Gratuït habitualment", map: maps("Parking Campu Les Rolles Ribadesella") },
+  "Llanes": { name: "Aparcament d’El Sablón", cost: "0–5 € segons zona i horari", map: maps("Parking El Sablón Llanes") },
+  "Santa María + San Miguel": { name: "Aparcament del Naranco", cost: "Gratuït", map: maps("Parking Santa María del Naranco") },
+  "Centre històric": { name: "Parking Salesas", cost: "Fins a 9,50 € orientatiu", map: maps("Parking Salesas Oviedo General Elorza 75") },
+  "Oviedo a peu": { name: "Parking Salesas", cost: "Fins a 9,50 € orientatiu", map: maps("Parking Salesas Oviedo General Elorza 75") },
+  "Medina del Campo / Rueda": { name: "Aparcament del Castell de la Mota", cost: "Gratuït", map: maps("Parking Castillo de la Mota Medina del Campo") },
 };
 
 const photoMissionByTitle: Record<string, PhotoMission> = {
@@ -383,13 +430,17 @@ export default function Home() {
   const [taskLabels, setTaskLabels] = useState<Record<string, string>>({});
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
   const [photoMemories, setPhotoMemories] = useState<PhotoMemory[]>([]);
+  const [receipts, setReceipts] = useState<ReceiptPhoto[]>([]);
   const [photoBusy, setPhotoBusy] = useState<string | null>(null);
   const [photoStatus, setPhotoStatus] = useState("Carregant l’àlbum local…");
-  const [expenseForm, setExpenseForm] = useState({ day: "1", concept: "", category: "Supermercat", amount: "", note: "" });
+  const [expenseForm, setExpenseForm] = useState({ day: "1", concept: "", category: "Supermercat", amount: "", note: "", paymentMethod: "Targeta de dèbit", paidBy: "Josep" });
+  const [receiptDraft, setReceiptDraft] = useState<File | null>(null);
   const [newTask, setNewTask] = useState({ label: "", group: "dia" });
-  const [newShopping, setNewShopping] = useState({ label: "", quantity: "", group: "Compra principal" });
+  const [newShopping, setNewShopping] = useState({ label: "", quantity: "", group: "Alimerka Avilés" });
   const restoreInput = useRef<HTMLInputElement>(null);
+  const receiptDraftInput = useRef<HTMLInputElement>(null);
   const photoMemoriesRef = useRef<PhotoMemory[]>([]);
+  const receiptsRef = useRef<ReceiptPhoto[]>([]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -400,15 +451,35 @@ export default function Home() {
       }
       setChecked(stored);
       localStorage.setItem(STORAGE.checked, JSON.stringify(stored));
-      try { setExpenses(JSON.parse(localStorage.getItem(STORAGE.expenses) || "null") || initialExpenses); } catch { setExpenses(initialExpenses); }
+      try {
+        const savedExpenses = JSON.parse(localStorage.getItem(STORAGE.expenses) || "null") || initialExpenses;
+        setExpenses(savedExpenses.map((expense: Expense) => ({ ...expense, paymentMethod: expense.paymentMethod || "Per indicar", paidBy: expense.paidBy || "Per indicar" })));
+      } catch { setExpenses(initialExpenses); }
       const savedBudget = Number(localStorage.getItem(STORAGE.budget));
       if (savedBudget > 0) setBudgetTotal(savedBudget);
       try { setCustomTasks(JSON.parse(localStorage.getItem(STORAGE.customTasks) || "[]")); } catch { setCustomTasks([]); }
       try { setTaskLabels(JSON.parse(localStorage.getItem(STORAGE.taskLabels) || "{}")); } catch { setTaskLabels({}); }
-      try { setShoppingItems(JSON.parse(localStorage.getItem(STORAGE.shopping) || "null") || initialShopping); } catch { setShoppingItems(initialShopping); }
+      try {
+        const savedShopping = JSON.parse(localStorage.getItem(STORAGE.shopping) || "null") || initialShopping;
+        setShoppingItems(savedShopping.map((item: ShoppingItem) => ({ ...item, group: item.group === "Compra principal" ? "Alimerka Avilés" : item.group })));
+      } catch { setShoppingItems(initialShopping); }
       setHydrated(true);
     }, 0);
     return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getAllReceipts().then((stored) => {
+      if (!active) return;
+      const loaded = stored.map((receipt) => ({ ...receipt, url: URL.createObjectURL(receipt.blob) }));
+      receiptsRef.current = loaded;
+      setReceipts(loaded);
+    }).catch(() => undefined);
+    return () => {
+      active = false;
+      receiptsRef.current.forEach((receipt) => URL.revokeObjectURL(receipt.url));
+    };
   }, []);
 
   useEffect(() => {
@@ -496,15 +567,49 @@ export default function Home() {
 
   const makeId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-  const addExpense = (event: FormEvent) => {
+  const saveReceipt = async (expenseId: string, file: File) => {
+    const id = `receipt-${expenseId}`;
+    const blob = await compressPhoto(file);
+    const stored: StoredReceipt = { id, expenseId, createdAt: new Date().toISOString(), blob };
+    await putReceipt(stored);
+    const nextReceipt: ReceiptPhoto = { ...stored, url: URL.createObjectURL(blob) };
+    setReceipts((current) => {
+      const previous = current.find((receipt) => receipt.id === id);
+      if (previous) URL.revokeObjectURL(previous.url);
+      const next = [nextReceipt, ...current.filter((receipt) => receipt.id !== id)];
+      receiptsRef.current = next;
+      return next;
+    });
+  };
+
+  const removeReceipt = async (receipt: ReceiptPhoto) => {
+    if (!window.confirm("Vols eliminar la foto del tiquet?")) return;
+    await deleteReceipt(receipt.id);
+    URL.revokeObjectURL(receipt.url);
+    setReceipts((current) => {
+      const next = current.filter((item) => item.id !== receipt.id);
+      receiptsRef.current = next;
+      return next;
+    });
+  };
+
+  const addExpense = async (event: FormEvent) => {
     event.preventDefault();
     const amount = Number(expenseForm.amount.replace(",", "."));
     if (!expenseForm.concept.trim() || !Number.isFinite(amount) || amount <= 0) return;
+    const expenseId = makeId("expense");
     setExpenses((current) => [{
-      id: makeId("expense"), day: Number(expenseForm.day), concept: expenseForm.concept.trim(),
-      category: expenseForm.category, amount, note: expenseForm.note.trim(), createdAt: new Date().toISOString(),
+      id: expenseId, day: Number(expenseForm.day), concept: expenseForm.concept.trim(),
+      category: expenseForm.category, amount, note: expenseForm.note.trim(), paymentMethod: expenseForm.paymentMethod,
+      paidBy: expenseForm.paidBy, createdAt: new Date().toISOString(),
     }, ...current]);
+    if (receiptDraft) {
+      try { await saveReceipt(expenseId, receiptDraft); }
+      catch { window.alert("La despesa s’ha guardat, però no s’ha pogut guardar la foto del tiquet."); }
+    }
     setExpenseForm((current) => ({ ...current, concept: "", amount: "", note: "" }));
+    setReceiptDraft(null);
+    if (receiptDraftInput.current) receiptDraftInput.current.value = "";
   };
 
   const editExpense = (expense: Expense) => {
@@ -514,11 +619,24 @@ export default function Home() {
     if (!amountText) return;
     const amount = Number(amountText.replace(",", "."));
     if (!Number.isFinite(amount) || amount <= 0) return;
-    setExpenses((current) => current.map((item) => item.id === expense.id ? { ...item, concept, amount } : item));
+    const paymentMethod = window.prompt("Forma de pagament: Efectiu, Targeta de dèbit o Targeta de crèdit", expense.paymentMethod) || expense.paymentMethod;
+    const paidBy = window.prompt("Qui ha pagat: Josep o Caty", expense.paidBy) || expense.paidBy;
+    setExpenses((current) => current.map((item) => item.id === expense.id ? { ...item, concept, amount, paymentMethod, paidBy } : item));
   };
 
-  const deleteExpense = (id: string) => {
-    if (window.confirm("Vols eliminar esta despesa?")) setExpenses((current) => current.filter((item) => item.id !== id));
+  const deleteExpense = async (id: string) => {
+    if (!window.confirm("Vols eliminar esta despesa?")) return;
+    const receipt = receipts.find((item) => item.expenseId === id);
+    if (receipt) {
+      await deleteReceipt(receipt.id);
+      URL.revokeObjectURL(receipt.url);
+      setReceipts((current) => {
+        const next = current.filter((item) => item.expenseId !== id);
+        receiptsRef.current = next;
+        return next;
+      });
+    }
+    setExpenses((current) => current.filter((item) => item.id !== id));
   };
 
   const addCustomTask = (event: FormEvent) => {
@@ -569,11 +687,14 @@ export default function Home() {
   const budgetPercent = budgetTotal > 0 ? Math.min(100, Math.round((spent / budgetTotal) * 100)) : 0;
   const expenseByCategory = categories.map((category) => ({ category, total: expenses.filter((expense) => expense.category === category).reduce((sum, expense) => sum + expense.amount, 0) })).filter((item) => item.total > 0);
   const expenseByDay = days.map((day) => ({ day, total: expenses.filter((expense) => expense.day === day.id).reduce((sum, expense) => sum + expense.amount, 0) }));
+  const expenseByPayer = payers.map((payer) => ({ payer, total: expenses.filter((expense) => expense.paidBy === payer).reduce((sum, expense) => sum + expense.amount, 0) }));
+  const expenseByMethod = paymentMethods.map((method) => ({ method, total: expenses.filter((expense) => expense.paymentMethod === method).reduce((sum, expense) => sum + expense.amount, 0) })).filter((item) => item.total > 0);
   const pendingShopping = shoppingItems.filter((item) => !item.checked).length;
   const selectedMissionCount = selected.schedule.filter((item) => photoMissionByTitle[item.title]).length;
   const selectedDayMemories = photoMemories.filter((memory) => memory.day === selected.id);
   const totalMissionCount = days.reduce((total, day) => total + day.schedule.filter((item) => photoMissionByTitle[item.title]).length, 0);
   const photoMegabytes = photoMemories.reduce((total, memory) => total + memory.blob.size, 0) / 1024 / 1024;
+  const receiptMegabytes = receipts.reduce((total, receipt) => total + receipt.blob.size, 0) / 1024 / 1024;
 
   const download = (filename: string, content: string, type: string) => {
     const url = URL.createObjectURL(new Blob([content], { type }));
@@ -587,13 +708,14 @@ export default function Home() {
   const backupData = async () => {
     try {
       const photos = await Promise.all(photoMemories.map(async ({ url: _url, blob, ...memory }) => ({ ...memory, dataUrl: await blobToDataUrl(blob) })));
-      download("asturies-2026-copia-amb-fotos.json", JSON.stringify({ version: 2, savedAt: new Date().toISOString(), checked, expenses, budgetTotal, customTasks, taskLabels, shoppingItems, photos }, null, 2), "application/json");
+      const savedReceipts = await Promise.all(receipts.map(async ({ url: _url, blob, ...receipt }) => ({ ...receipt, dataUrl: await blobToDataUrl(blob) })));
+      download("asturies-2026-copia-amb-fotos.json", JSON.stringify({ version: 3, savedAt: new Date().toISOString(), checked, expenses, budgetTotal, customTasks, taskLabels, shoppingItems, photos, receipts: savedReceipts }, null, 2), "application/json");
     } catch { window.alert("No s’ha pogut preparar la còpia amb les fotografies."); }
   };
 
   const exportCsv = () => {
     const escape = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
-    const rows = [["Dia", "Concepte", "Categoria", "Import", "Nota"], ...expenses.map((expense) => [expense.day, expense.concept, expense.category, expense.amount.toFixed(2), expense.note])];
+    const rows = [["Dia", "Concepte", "Categoria", "Import", "Forma de pagament", "Pagat per", "Tiquet", "Nota"], ...expenses.map((expense) => [expense.day, expense.concept, expense.category, expense.amount.toFixed(2), expense.paymentMethod, expense.paidBy, receipts.some((receipt) => receipt.expenseId === expense.id) ? "Sí" : "No", expense.note])];
     download("despeses-asturies-2026.csv", `\uFEFF${rows.map((row) => row.map(escape).join(";")).join("\n")}`, "text/csv;charset=utf-8");
   };
 
@@ -606,7 +728,7 @@ export default function Home() {
         const data = JSON.parse(String(reader.result));
         if (!data || !Array.isArray(data.expenses) || !Array.isArray(data.shoppingItems)) throw new Error("invalid");
         setChecked(data.checked || {});
-        setExpenses(data.expenses);
+        setExpenses(data.expenses.map((expense: Expense) => ({ ...expense, paymentMethod: expense.paymentMethod || "Per indicar", paidBy: expense.paidBy || "Per indicar" })));
         setBudgetTotal(Number(data.budgetTotal) || 1690);
         setCustomTasks(Array.isArray(data.customTasks) ? data.customTasks : []);
         setTaskLabels(data.taskLabels || {});
@@ -628,6 +750,22 @@ export default function Home() {
           photoMemoriesRef.current = restored;
           setPhotoMemories(restored);
           setPhotoStatus(restored.length ? `${restored.length} records restaurats` : "Encara no hi ha fotos guardades");
+        }
+        if (Array.isArray(data.receipts)) {
+          await clearReceipts();
+          receiptsRef.current.forEach((receipt) => URL.revokeObjectURL(receipt.url));
+          const restoredReceipts: ReceiptPhoto[] = [];
+          for (const item of data.receipts) {
+            if (!item?.id || !item?.expenseId || !item?.dataUrl) continue;
+            const stored: StoredReceipt = {
+              id: String(item.id), expenseId: String(item.expenseId),
+              createdAt: String(item.createdAt || new Date().toISOString()), blob: await dataUrlToBlob(String(item.dataUrl)),
+            };
+            await putReceipt(stored);
+            restoredReceipts.push({ ...stored, url: URL.createObjectURL(stored.blob) });
+          }
+          receiptsRef.current = restoredReceipts;
+          setReceipts(restoredReceipts);
         }
         window.alert("Còpia restaurada correctament, incloses les fotografies disponibles.");
       } catch { window.alert("No s’ha pogut restaurar: el fitxer no és una còpia vàlida."); }
@@ -654,7 +792,7 @@ export default function Home() {
       <header className="topbar">
         <a className="brand" href="#inici" aria-label="Inici"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></a>
         <nav className={menuOpen ? "main-nav open" : "main-nav"}>
-          <button onClick={() => jump("itinerari")}>Itinerari</button><button onClick={() => jump("compres")}>Compres</button><button onClick={() => jump("maleta")}>Llistes</button><button onClick={() => jump("reserves")}>Reserves</button><button onClick={() => jump("control")}>Control</button>
+          <a href="#allotjament" onClick={() => setMenuOpen(false)}>Allotjament</a><button onClick={() => jump("itinerari")}>Itinerari</button><button onClick={() => jump("compres")}>Compres</button><button onClick={() => jump("maleta")}>Llistes</button><button onClick={() => jump("reserves")}>Reserves</button><button onClick={() => jump("control")}>Control</button>
         </nav>
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Obrir menú">{menuOpen ? "×" : "☰"}</button>
       </header>
@@ -674,20 +812,43 @@ export default function Home() {
             <img className="family-portrait" src={familyCutout} alt="Josep, Caty, Lluís i Cesc, la família Avellà-Ferrer"/>
             <div className="family-nameplate"><b>La nostra aventura</b><span>Josep · Caty · Lluís · Cesc</span></div>
           </div>
-          <aside className="trip-card">
-            <div className="trip-card-top"><span>COMENÇA EL</span><b>16·08</b></div>
-            <div className="trip-route"><span className="route-dot start"/><div><small>EIXIDA · 16 AGO</small><strong>Xaló</strong></div></div><div className="route-line"><span>930 km</span></div><div className="trip-route"><span className="route-dot end"/><div><small>BASE · 7 NITS</small><strong>La Callezuela</strong></div></div>
-            <div className="trip-progress"><div><span>Preparació</span><b>{completedTasks}/{allTaskCount}</b></div><i><em style={{ width: `${Math.round((completedTasks / Math.max(1, allTaskCount)) * 100)}%` }}/></i></div>
-            <div className="trip-meta"><div><span>8</span><small>DIES</small></div><div><span>4</span><small>VIATGERS</small></div><div><span>7,3</span><small>L/100 KM</small></div></div>
-          </aside>
         </div>
+        <aside className="trip-card">
+          <div className="trip-card-top"><span>COMENÇA EL</span><b>16·08</b></div>
+          <div className="trip-route"><span className="route-dot start"/><div><small>EIXIDA · 16 AGO</small><strong>Xaló</strong></div></div><div className="route-line"><span>930 km</span></div><div className="trip-route"><span className="route-dot end"/><div><small>BASE · 7 NITS</small><strong>La Callezuela</strong></div></div>
+          <div className="trip-progress"><div><span>Preparació</span><b>{completedTasks}/{allTaskCount}</b></div><i><em style={{ width: `${Math.round((completedTasks / Math.max(1, allTaskCount)) * 100)}%` }}/></i></div>
+          <div className="trip-meta"><div><span>8</span><small>DIES</small></div><div><span>4</span><small>VIATGERS</small></div><div><span>7,3</span><small>L/100 KM</small></div></div>
+        </aside>
       </section>
 
       <section className="quick-strip">
-        <a href={contactById.casal.map} target="_blank" rel="noreferrer"><span>⌂</span><p><small>ALLOTJAMENT · MAPS</small><strong>Apartamentos El Casal ↗</strong></p></a>
+        <a href="#allotjament"><span>⌂</span><p><small>EL NOSTRE ALLOTJAMENT</small><strong>Descobrir El Casal ↓</strong></p></a>
         <div><span>◉</span><p><small>DATES</small><strong>16–23 agost 2026</strong></p></div>
         <a href="tel:+34699862203"><span>☎</span><p><small>EL CASAL</small><strong>699 862 203</strong></p></a>
         <button onClick={() => jump("control")}><span>€</span><p><small>DESPESES</small><strong>{spent.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} € de {budgetTotal.toLocaleString("ca-ES")} €</strong></p></button>
+      </section>
+
+      <section className="section lodging-section" id="allotjament">
+        <div className="lodging-heading">
+          <div><p className="kicker">LA NOSTRA CASA A ASTÚRIES</p><h2>Apartamentos El Casal</h2><p>Un antic caseriu restaurat a La Callezuela, en plena natura però ben situat per a les rutes d’Avilés, la costa i el centre d’Astúries.</p></div>
+          <div className="lodging-booking"><small>RESERVA FAMILIAR</small><strong>16–23 d’agost · 7 nits</strong><span>725 € confirmats</span></div>
+        </div>
+        <div className="lodging-feature">
+          <figure className="lodging-photo"><img src={elCasalImage} alt="Exterior dels Apartamentos El Casal a Illas" loading="lazy"/><figcaption>El Casal · Barbachedo, 6 · La Callezuela <a href={elCasalTourism} target="_blank" rel="noreferrer">Font de la foto ↗</a></figcaption></figure>
+          <div className="lodging-summary">
+            <p className="lodging-intro">La finca conserva un hórreo de més de 200 anys, amb la recepció a la part superior i una zona exterior amb taules, jocs i futbolí davall. El conjunt té tres apartaments i està obert tot l’any.</p>
+            <div className="lodging-highlights">
+              <span>🏊 <b>Piscina exterior</b></span><span>🛝 <b>Jardí i parc infantil</b></span><span>🔥 <b>Barbacoa i taules</b></span><span>🅿️ <b>Aparcament inclòs</b></span><span>📶 <b>Wifi</b></span><span>🧺 <b>Rentadora</b></span>
+            </div>
+            <div className="lodging-actions"><a className="primary lodging-primary" href={contactById.casal.map} target="_blank" rel="noreferrer">Com arribar · Maps ↗</a><a href="tel:+34699862203">☎ 699 862 203</a><a href={contactById.casal.web} target="_blank" rel="noreferrer">Web oficial ↗</a><a href={elCasalBooking} target="_blank" rel="noreferrer">Veure en Booking ↗</a></div>
+          </div>
+        </div>
+        <div className="lodging-grid">
+          <article className="lodging-card confirmed"><span>✓ CONFIRMAT EN LA FITXA OFICIAL</span><h3>Què trobarem</h3><ul><li>Cuina amb menatge complet</li><li>Rentadora i rentavaixella</li><li>Roba de llit, calefacció i televisió</li><li>Wifi i accés a internet</li><li>Piscina, jardí, barbacoa i mobles d’exterior</li><li>Parc infantil, futbolí i jocs</li><li>Aparcament en l’allotjament</li><li>Possibilitat de bressol, que convé sol·licitar abans</li></ul></article>
+          <article className="lodging-card layout-card"><span>⌂ DISTRIBUCIÓ</span><h3>Quin apartament tenim?</h3><p><b>Trasgu</b> té una habitació amb dos llits de 105 cm, sofà llit doble, bany gran, terrassa privada i solàrium.</p><p><b>Xana i Cuélebre</b> són lofts oberts amb dos llits de 105 cm i sofà llit doble; poden comunicar-se entre si.</p><p className="lodging-note">La fitxa que ens has passat no identifica clarament la unitat reservada. Cal confirmar el nom de l’apartament i la distribució exacta per a Josep, Caty, Lluís i Cesc.</p></article>
+          <article className="lodging-card pending-card"><span>? ENCARA PER CONFIRMAR</span><h3>Què hem de preguntar</h3><ul><li>Tipus de cafetera i si necessita càpsules o filtres</li><li>Si hi ha oli, sal i productes bàsics de cuina</li><li>Tovalloles de bany i tovalloles específiques de piscina</li><li>Gel, xampú, paper higiènic i productes de neteja</li><li>Mida del frigorífic i espai real de congelador</li><li>Horari i dates d’obertura de la piscina</li><li>Ús de la barbacoa i si cal portar carbó</li><li>Hora d’entrada, entrega de claus i hora d’eixida</li></ul><TaskCheck id="casal-cuina" label={taskLabels["casal-cuina"]} checked={!!checked["casal-cuina"]} onToggle={toggleTask} compact/></article>
+        </div>
+        <div className="lodging-practical"><span>ⓘ</span><p><b>Important per a la família:</b> és un allotjament rural i no un nucli comercial; per això convé arribar amb el sopar del primer dia i els desdejunis inicials. El transport públic figura a menys de 500 m, però per a la compra i les excursions continuarem depenent del Tiguan. Amb Cesc, supervisió constant en la piscina i les zones exteriors.</p></div>
       </section>
 
       <section className="section route-section" id="ruta">
@@ -712,13 +873,14 @@ export default function Home() {
             <div className="detail-columns">
               <div className="timeline"><h3>Horari pas a pas</h3>{selected.schedule.map((item, index) => {
                 const visit = visitDetailsByTitle[item.title];
+                const parking = parkingByTitle[item.title];
                 const foodStop = foodStopsByTitle[item.title];
                 const alternative = foodStop?.alternativeId ? restaurantAlternatives[foodStop.alternativeId] : undefined;
                 const photoMission = photoMissionByTitle[item.title];
                 const photoMemory = photoMemories.find((memory) => memory.id === `day-${selected.id}-${item.title}`);
                 return <div className="timeline-item" key={`${selected.id}-${index}`}><time>{item.time}</time><span className="timeline-dot"/><div className="timeline-copy"><div><strong>{item.title}</strong>{item.tag && <em>{item.tag}</em>}</div><p>{item.note}</p><div className="timeline-links">{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir ubicació ↗</a>}{foodStop && <a className="review-action" href={foodStop.reviews} target="_blank" rel="noreferrer">★ Ressenyes Google ↗</a>}</div>
                   {alternative && <div className="timeline-alternative"><span>Alternativa si està complet</span><strong>{alternative.name}</strong><small>{alternative.detail}</small><div>{alternative.phone && <a href={`tel:${alternative.phone}`}>☎ {alternative.phoneLabel}</a>}<a href={alternative.map} target="_blank" rel="noreferrer">Maps ↗</a><a href={alternative.reviews} target="_blank" rel="noreferrer">Ressenyes ↗</a></div></div>}
-                  {visit && <details className="visit-details"><summary><span className="plus-icon">+</span><span>Veure descripció i foto</span></summary><div className="visit-card"><div className="visit-media"><img src={visit.image} alt={visit.imageAlt} loading="lazy" onError={(event) => { event.currentTarget.hidden = true; event.currentTarget.parentElement?.classList.add("image-missing"); }}/><span>📍 Fotografia temporalment no disponible</span></div><div><p>{visit.description}</p><div>{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir en Maps ↗</a>}<a href={visit.source} target="_blank" rel="noreferrer">Font de la foto ↗</a></div></div></div></details>}
+                  {visit && <details className="visit-details"><summary><span className="plus-icon">+</span><span>Veure descripció, foto i aparcament</span></summary><div className="visit-card"><div className="visit-media"><img src={visit.image} alt={visit.imageAlt} loading="lazy" onError={(event) => { event.currentTarget.hidden = true; event.currentTarget.parentElement?.classList.add("image-missing"); }}/><span>📍 Fotografia temporalment no disponible</span></div><div><p>{visit.description}</p>{parking && <a className="parking-card" href={parking.map} target="_blank" rel="noreferrer"><span className="parking-icon">P</span><span><small>APARCAMENT PRÒXIM</small><b>{parking.name}</b><em>{parking.cost} · obrir ruta ↗</em></span></a>}<div>{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir lloc en Maps ↗</a>}<a href={visit.source} target="_blank" rel="noreferrer">Font de la foto ↗</a></div></div></div></details>}
                   {photoMission && <PhotoMissionCard day={selected.id} placeTitle={item.title} mission={photoMission} memory={photoMemory} busy={photoBusy === `day-${selected.id}-${item.title}`} onPhoto={(file) => savePhoto(selected.id, item.title, photoMission, file)} onNote={() => photoMemory && editPhotoNote(photoMemory)} onDelete={() => photoMemory && removePhoto(photoMemory)} />}
                 </div></div>;
               })}</div>
@@ -744,15 +906,16 @@ export default function Home() {
 
         {tab === "compres" && <div className="tab-panel simple-panel">
           <div className="panel-intro"><p className="kicker">LLISTA DE LA COMPRA</p><h2>Afegix, marca i compra.</h2><p>Queden {pendingShopping} productes pendents. Qualsevol canvi es guarda automàticament en este dispositiu.</p></div>
-          <form className="add-form shopping-add" onSubmit={addShoppingItem}>
+          <form className="add-form shopping-add" id="shopping-add-form" onSubmit={addShoppingItem}>
             <label><span>Producte</span><input value={newShopping.label} onChange={(event) => setNewShopping((current) => ({ ...current, label: event.target.value }))} placeholder="Ex. ous o salmó" required/></label>
             <label><span>Quantitat o nota</span><input value={newShopping.quantity} onChange={(event) => setNewShopping((current) => ({ ...current, quantity: event.target.value }))} placeholder="Ex. 2 paquets"/></label>
             <label><span>Grup</span><select value={newShopping.group} onChange={(event) => setNewShopping((current) => ({ ...current, group: event.target.value }))}>{shoppingGroups.map((group) => <option key={group}>{group}</option>)}</select></label>
             <button className="form-primary" type="submit">+ Afegir</button>
           </form>
-          <div className="shopping-groups">{shoppingGroups.map((group) => { const items = shoppingItems.filter((item) => item.group === group); if (!items.length) return null; return <section key={group}><div className="shopping-group-head"><h3>{group}</h3><span>{items.filter((item) => item.checked).length}/{items.length}</span></div>{items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.label}`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>)}</section>; })}</div>
-          <div className="subheading store-heading"><div><p className="kicker">ON COMPRAR</p><h3>Supermercats i moments previstos</h3></div></div>
-          <div className="store-list compact-stores">{shops.map((shop, index) => <article className="store-card" key={shop.id}><div className="shopping-index">0{index+1}</div><div className="store-main"><small>{shop.note}</small><h3>{shop.when}</h3><address>{shop.address}</address><p>{shop.items}</p><div className="store-actions"><a href={shop.map} target="_blank" rel="noreferrer">Google Maps ↗</a>{shop.web && <a href={shop.web} target="_blank" rel="noreferrer">Fitxa i horari ↗</a>}</div><TaskCheck id={shop.taskId} label={taskLabels[shop.taskId]} checked={!!checked[shop.taskId]} onToggle={toggleTask} compact/></div></article>)}</div>
+          <div className="subheading store-heading"><div><p className="kicker">ON COMPRAR</p><h3>Supermercats i llista de cada compra</h3></div></div>
+          <div className="store-list compact-stores">{shops.map((shop, index) => { const group = shopGroupById[shop.id]; const items = shoppingItems.filter((item) => item.group === group); return <article className="store-card store-with-list" key={shop.id}><div className="shopping-index">🛒</div><div className="store-main"><small>COMPRA {String(index + 1).padStart(2, "0")} · {shop.note}</small><h3>{shop.when}</h3><address>{shop.address}</address><p>{shop.items}</p><div className="store-actions"><a href={shop.map} target="_blank" rel="noreferrer">Google Maps ↗</a>{shop.web && <a href={shop.web} target="_blank" rel="noreferrer">Fitxa i horari ↗</a>}<button onClick={() => { setNewShopping((current) => ({ ...current, group })); document.getElementById("shopping-add-form")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>+ Afegir a esta compra</button></div><div className="store-shopping"><div className="shopping-group-head"><h4><span>🛒</span> Dins de la cistella</h4><b>{items.filter((item) => item.checked).length}/{items.length}</b></div>{items.length ? items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Traure" : "Posar"} ${item.label} ${item.checked ? "de" : "en"} la cistella`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>) : <p className="empty-state">Encara no hi ha productes en esta compra.</p>}</div><TaskCheck id={shop.taskId} label={taskLabels[shop.taskId]} checked={!!checked[shop.taskId]} onToggle={toggleTask} compact/></div></article>; })}</div>
+          <div className="subheading store-heading"><div><p className="kicker">ALTRES LLISTES</p><h3>Desdejunis, pícnics i sopars</h3></div></div>
+          <div className="shopping-groups">{shoppingGroups.filter((group) => !Object.values(shopGroupById).includes(group)).map((group) => { const items = shoppingItems.filter((item) => item.group === group); if (!items.length) return null; return <section key={group}><div className="shopping-group-head"><h3><span className="basket-emoji">🛒</span>{group}</h3><span>{items.filter((item) => item.checked).length}/{items.length}</span></div>{items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.label}`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>)}</section>; })}</div>
           <div className="menu-bank"><h3>Rotació familiar</h3><div><span>Hamburgueses + ensalada</span><span>Salmó + ensalada</span><span>Pollastre + verdura</span><span>Pizzes congelades</span><span>Llom + arròs</span><span>Pasta + tonyina</span></div></div>
           <div className="allergy-note"><b>Atenció alimentària</b><p>Lluís té al·lèrgia als fruits secs i a diverses fruites. Comproveu ingredients i traces, pregunteu per la contaminació creuada, porteu la medicació accessible i manteniu separat el seu menjar de pícnic.</p></div>
         </div>}
@@ -800,7 +963,10 @@ export default function Home() {
               <label className="concept-field"><span>Concepte</span><input value={expenseForm.concept} onChange={(event) => setExpenseForm((current) => ({ ...current, concept: event.target.value }))} placeholder="Ex. compra Mercadona" required/></label>
               <label><span>Categoria</span><select value={expenseForm.category} onChange={(event) => setExpenseForm((current) => ({ ...current, category: event.target.value }))}>{categories.map((category) => <option key={category}>{category}</option>)}</select></label>
               <label><span>Import (€)</span><input inputMode="decimal" value={expenseForm.amount} onChange={(event) => setExpenseForm((current) => ({ ...current, amount: event.target.value }))} placeholder="0,00" required/></label>
+              <label><span>Forma de pagament</span><select value={expenseForm.paymentMethod} onChange={(event) => setExpenseForm((current) => ({ ...current, paymentMethod: event.target.value }))}>{paymentMethods.map((method) => <option key={method}>{method}</option>)}</select></label>
+              <label><span>Qui paga</span><select value={expenseForm.paidBy} onChange={(event) => setExpenseForm((current) => ({ ...current, paidBy: event.target.value }))}>{payers.map((payer) => <option key={payer}>{payer}</option>)}</select></label>
               <label className="note-field"><span>Nota opcional</span><input value={expenseForm.note} onChange={(event) => setExpenseForm((current) => ({ ...current, note: event.target.value }))} placeholder="Ex. inclou sopar"/></label>
+              <label className="receipt-field"><span>Foto del tiquet · opcional</span><input ref={receiptDraftInput} type="file" accept="image/*" capture="environment" onChange={(event) => setReceiptDraft(event.target.files?.[0] || null)}/>{receiptDraft && <small>📎 {receiptDraft.name}</small>}</label>
               <button className="form-primary" type="submit">+ Guardar despesa</button>
             </form>
           </section>
@@ -808,14 +974,16 @@ export default function Home() {
           <div className="control-grids">
             <section className="summary-card"><div className="summary-title"><h3>Per categoria</h3><span>{expenseByCategory.length}</span></div>{expenseByCategory.length ? expenseByCategory.map((item) => <div className="summary-row" key={item.category}><span>{item.category}</span><b>{item.total.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</b></div>) : <p className="empty-state">Encara no hi ha despeses.</p>}</section>
             <section className="summary-card"><div className="summary-title"><h3>Per dia</h3><span>8</span></div>{expenseByDay.map(({ day, total }) => <button className="summary-row day-row" key={day.id} onClick={() => { setExpenseForm((current) => ({ ...current, day: String(day.id) })); }}><span>Dia {day.id} · {day.title}</span><b>{total.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</b></button>)}</section>
+            <section className="summary-card"><div className="summary-title"><h3>Qui ha pagat</h3><span>{expenseByPayer.length}</span></div>{expenseByPayer.map((item) => <div className="summary-row" key={item.payer}><span>{item.payer}</span><b>{item.total.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</b></div>)}</section>
+            <section className="summary-card"><div className="summary-title"><h3>Forma de pagament</h3><span>{expenseByMethod.length}</span></div>{expenseByMethod.length ? expenseByMethod.map((item) => <div className="summary-row" key={item.method}><span>{item.method}</span><b>{item.total.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</b></div>) : <p className="empty-state">Encara no hi ha despeses.</p>}</section>
           </div>
 
           <section className="expense-history">
             <div className="subheading"><div><p className="kicker">HISTORIAL</p><h3>Totes les despeses</h3></div><strong>{spent.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</strong></div>
-            <div className="expense-list">{expenses.length ? expenses.map((expense) => <article key={expense.id}><div className="expense-day"><small>DIA</small><b>{expense.day}</b></div><div className="expense-copy"><small>{expense.category}</small><h4>{expense.concept}</h4>{expense.note && <p>{expense.note}</p>}</div><strong>{expense.amount.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</strong><div className="item-actions"><button onClick={() => editExpense(expense)} aria-label={`Editar ${expense.concept}`}>✎</button><button onClick={() => deleteExpense(expense.id)} aria-label={`Eliminar ${expense.concept}`}>×</button></div></article>) : <p className="empty-state">Encara no has registrat cap despesa.</p>}</div>
+            <div className="expense-list">{expenses.length ? expenses.map((expense) => { const receipt = receipts.find((item) => item.expenseId === expense.id); return <article key={expense.id}><div className="expense-day"><small>DIA</small><b>{expense.day}</b></div><div className="expense-copy"><small>{expense.category}</small><h4>{expense.concept}</h4><div className="expense-meta"><span>{expense.paymentMethod}</span><span>Pagat per {expense.paidBy}</span></div>{expense.note && <p>{expense.note}</p>}</div>{receipt && <a className="receipt-thumb" href={receipt.url} target="_blank" rel="noreferrer" title="Obrir foto del tiquet"><img src={receipt.url} alt={`Tiquet de ${expense.concept}`}/><span>🧾 Tiquet</span></a>}<strong>{expense.amount.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</strong><div className="item-actions expense-actions"><label title={receipt ? "Canviar foto del tiquet" : "Afegir foto del tiquet"}>🧾<input type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.target.files?.[0]; if (file) saveReceipt(expense.id, file).catch(() => window.alert("No s’ha pogut guardar el tiquet.")); event.target.value = ""; }} hidden/></label>{receipt && <button onClick={() => removeReceipt(receipt)} aria-label={`Eliminar tiquet de ${expense.concept}`}>⌫</button>}<button onClick={() => editExpense(expense)} aria-label={`Editar ${expense.concept}`}>✎</button><button onClick={() => deleteExpense(expense.id)} aria-label={`Eliminar ${expense.concept}`}>×</button></div></article>; }) : <p className="empty-state">Encara no has registrat cap despesa.</p>}</div>
           </section>
 
-          <section className="data-tools"><div><p className="kicker">SEGURETAT DE LES DADES</p><h3>Còpia completa, també de les fotos</h3><p>Les dades viuen en este navegador. La còpia inclou despeses, llistes i els {photoMemories.length} records familiars ({photoMegabytes.toFixed(1)} MB) de {totalMissionCount} missions possibles.</p></div><div className="tool-actions"><button onClick={backupData}>Guardar còpia amb fotos</button><button onClick={() => restoreInput.current?.click()}>Restaurar dades</button><button onClick={exportCsv}>Exportar despeses CSV</button><input ref={restoreInput} type="file" accept="application/json,.json" onChange={restoreData} hidden/></div></section>
+          <section className="data-tools"><div><p className="kicker">SEGURETAT DE LES DADES</p><h3>Còpia completa, també de les fotos</h3><p>Les dades viuen en este navegador. La còpia inclou despeses, llistes, {receipts.length} tiquets ({receiptMegabytes.toFixed(1)} MB) i els {photoMemories.length} records familiars ({photoMegabytes.toFixed(1)} MB) de {totalMissionCount} missions possibles.</p></div><div className="tool-actions"><button onClick={backupData}>Guardar còpia amb fotos</button><button onClick={() => restoreInput.current?.click()}>Restaurar dades</button><button onClick={exportCsv}>Exportar despeses CSV</button><input ref={restoreInput} type="file" accept="application/json,.json" onChange={restoreData} hidden/></div></section>
         </div>}
       </section>
 

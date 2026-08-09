@@ -118,6 +118,60 @@
   .mobile-nav button span{font-size:15px}
 }
 
+/* Aparcaments pròxims */
+.parking-card{display:flex!important;align-items:center;gap:12px;margin:16px 0 4px;padding:13px!important;border:1px solid #a9c5bc;border-radius:6px!important;background:#eef6f1!important;color:var(--deep)!important}
+.parking-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:6px;background:#1768a5;color:white;font-family:Arial,sans-serif;font-size:22px;font-weight:900}
+.parking-card>span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
+.parking-card small{font-size:8px;letter-spacing:.12em;font-weight:900;color:#527169}
+.parking-card b{font-size:12px}
+.parking-card em{font-size:10px;font-style:normal;color:var(--green)}
+
+/* Compra per supermercat */
+.store-with-list{align-items:start}
+.store-with-list .shopping-index{font-size:23px}
+.store-actions button{border:1px solid #aac0b7;border-radius:4px;background:#eef5f0;color:var(--green);padding:9px 10px;font-size:10px;font-weight:900;cursor:pointer}
+.store-shopping{margin:18px 0;padding:15px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.store-shopping .shopping-group-head{padding-bottom:9px}
+.store-shopping .shopping-group-head h4{display:flex;align-items:center;gap:7px;margin:0;font-family:Georgia,serif;font-size:18px;font-weight:400}
+.store-shopping .shopping-group-head b{min-width:34px;padding:7px;border-radius:20px;background:#edf4ef;color:var(--green);text-align:center;font-size:10px}
+.basket-emoji{margin-right:7px}
+
+/* Pagaments i tiquets */
+.expense-form{grid-template-columns:repeat(4,minmax(0,1fr))}
+.expense-form .note-field{grid-column:span 2}
+.expense-form .receipt-field{grid-column:span 1}
+.receipt-field input[type="file"]{height:auto;padding:10px;background:white;font-size:10px}
+.receipt-field small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--green);font-size:9px}
+.expense-list article{grid-template-columns:46px minmax(0,1fr) auto auto auto}
+.expense-meta{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.expense-meta span{padding:4px 7px;border-radius:20px;background:#edf4ef;color:#34594f;font-size:8px;font-weight:800}
+.receipt-thumb{width:60px;height:60px;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:5px;background:#f2f4ef}
+.receipt-thumb img{width:100%;height:100%;object-fit:cover}
+.receipt-thumb span{position:absolute;left:0;right:0;bottom:0;padding:3px;background:rgba(8,50,44,.82);color:#fff;text-align:center;font-size:7px;font-weight:900}
+.expense-actions label{width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--line);border-radius:4px;background:white;color:var(--muted);cursor:pointer;font-size:14px}
+
+@media(max-width:900px){
+  .expense-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .expense-form .note-field{grid-column:span 1}
+}
+
+@media(max-width:600px){
+  .parking-card small{font-size:10px}
+  .parking-card b{font-size:14px}
+  .parking-card em{font-size:12px}
+  .store-card{grid-template-columns:43px 1fr}
+  .store-shopping{margin-left:-52px;padding:12px}
+  .store-actions button{font-size:12px}
+  .expense-form{grid-template-columns:1fr}
+  .expense-form .note-field,.expense-form .receipt-field{grid-column:auto}
+  .receipt-field input[type="file"]{font-size:13px}
+  .expense-list article{grid-template-columns:42px minmax(0,1fr) auto}
+  .receipt-thumb{grid-column:2/3;width:86px;height:70px}
+  .expense-list article>strong{grid-column:3;grid-row:1/3;align-self:start;margin-top:12px}
+  .expense-actions{grid-column:2/4!important}
+  .expense-meta span{font-size:10px}
+}
+
 /* Llegibilitat mòbil i contrast reforçat */
 :root{--muted:#4b625b;--line:#c8d3cd}
 .hero-lead{color:#e1ece8}
@@ -454,9 +508,10 @@
 }
 .hero{
   min-height:780px;grid-template-columns:minmax(0,1.05fr) minmax(440px,.95fr);
-  gap:clamp(30px,4.5vw,78px);padding-top:78px;padding-bottom:105px;
+  grid-template-areas:"content visual" "card visual";grid-template-rows:auto auto;
+  align-items:start;gap:28px clamp(30px,4.5vw,78px);padding-top:78px;padding-bottom:105px;
 }
-.hero-content{max-width:760px}
+.hero-content{grid-area:content;max-width:760px}
 .hero h1.family-title{max-width:760px;font-size:clamp(58px,6.7vw,96px);line-height:.88;letter-spacing:-.06em}
 .family-title>span:first-child{
   display:block;margin:0 0 .38em .1em;color:#e5efeb;font-family:Arial,sans-serif;
@@ -470,7 +525,7 @@
   font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;
 }
 .hero-lead{max-width:575px;margin-top:24px}
-.hero-visual{position:relative;z-index:2;width:100%;min-height:610px;align-self:stretch}
+.hero-visual{grid-area:visual;position:relative;z-index:2;width:100%;min-height:610px;align-self:stretch}
 .hero-family{position:absolute;inset:-5px -35px 5px -20px;display:flex;align-items:flex-end;justify-content:center}
 .family-monogram{
   position:absolute;z-index:0;top:8px;right:1%;width:min(30vw,390px);height:min(30vw,390px);
@@ -490,33 +545,32 @@
 }
 .family-nameplate b{color:var(--lime);font-family:Georgia,serif;font-size:16px;font-weight:400}
 .family-nameplate span{color:#e0ebe7;font-size:9px;font-weight:800;letter-spacing:.08em}
-.hero-visual .trip-card{
-  position:absolute;z-index:6;left:-44px;bottom:-67px;width:292px;padding:20px;transform:rotate(-1.2deg);
+.hero>.trip-card{
+  grid-area:card;position:relative;z-index:6;width:min(100%,390px);margin:0;padding:20px;transform:rotate(-.5deg);
 }
-.hero-visual .trip-card-top{padding-bottom:14px}
-.hero-visual .trip-card-top b{font-size:23px}
-.hero-visual .trip-route{margin:16px 0}
-.hero-visual .trip-route strong{font-size:18px}
-.hero-visual .route-line{height:34px;margin:-13px 0 -13px 8px}
-.hero-visual .trip-progress{margin-bottom:14px;padding-bottom:14px}
-.hero-visual .trip-meta{padding-top:14px}
-.hero-visual .trip-meta span{font-size:19px}
+.hero>.trip-card .trip-card-top{padding-bottom:14px}
+.hero>.trip-card .trip-card-top b{font-size:23px}
+.hero>.trip-card .trip-route{margin:16px 0}
+.hero>.trip-card .trip-route strong{font-size:18px}
+.hero>.trip-card .route-line{height:34px;margin:-13px 0 -13px 8px}
+.hero>.trip-card .trip-progress{margin-bottom:14px;padding-bottom:14px}
+.hero>.trip-card .trip-meta{padding-top:14px}
+.hero>.trip-card .trip-meta span{font-size:19px}
 
 @media(max-width:1100px){
   .hero{grid-template-columns:minmax(0,1fr) minmax(390px,.9fr);gap:28px;padding-left:42px;padding-right:42px}
   .hero h1.family-title{font-size:clamp(54px,6.2vw,76px)}
   .hero-family{inset:10px -25px 5px -35px}
-  .hero-visual .trip-card{left:-18px}
 }
 
 @media(max-width:900px){
-  .hero{grid-template-columns:1fr;gap:25px;padding:70px clamp(24px,8vw,72px) 115px}
+  .hero{grid-template-columns:1fr;grid-template-areas:"content" "visual" "card";gap:25px;padding:70px clamp(24px,8vw,72px) 70px}
   .hero-content{max-width:720px}
   .hero h1.family-title{font-size:clamp(62px,10.2vw,92px)}
   .hero-visual{min-height:590px;max-width:730px;margin:0 auto}
   .hero-family{inset:0 -10px 0}
   .family-monogram{width:390px;height:390px;right:8%}
-  .hero-visual .trip-card{left:0;bottom:-76px}
+  .hero>.trip-card{width:100%;max-width:730px;margin:0 auto;transform:none}
 }
 
 @media(max-width:600px){
@@ -529,13 +583,103 @@
   .family-title>span:last-child{font-size:.62em}
   .hero-season{margin-top:17px;font-size:10px}
   .hero-lead{margin-top:20px}
-  .hero-visual{display:flex;min-height:0;max-width:none;flex-direction:column;gap:14px;margin-top:0}
+  .hero-visual{min-height:0;max-width:none;margin-top:0}
   .hero-family{position:relative;inset:auto;min-height:325px;overflow:hidden;border-radius:8px;background:rgba(255,255,255,.025)}
   .family-monogram{top:18px;right:-18px;width:245px;height:245px;font-size:102px}
   .family-portrait{position:absolute;bottom:0;left:50%;width:440px;max-width:none;max-height:330px;transform:translateX(-50%)}
   .family-nameplate{right:8px;bottom:8px;min-width:0;padding:10px 12px}
   .family-nameplate b{font-size:14px}
   .family-nameplate span{font-size:8px}
-  .hero-visual .trip-card{position:relative;left:auto;bottom:auto;width:100%;max-width:none;margin:0;padding:22px;transform:none}
-  .hero-visual .trip-route strong{font-size:20px}
+  .hero>.trip-card{width:100%;max-width:none;margin:0;padding:22px;transform:none}
+  .hero>.trip-card .trip-route strong{font-size:20px}
+}
+
+/* Ajustos finals de les noves funcions locals */
+.expense-form{grid-template-columns:repeat(4,minmax(0,1fr))}
+.expense-form .note-field{grid-column:span 2}
+.expense-form .receipt-field{grid-column:span 1}
+.expense-form .form-primary{grid-column:auto}
+.expense-list article{grid-template-columns:46px minmax(0,1fr) auto auto auto}
+
+@media(max-width:900px){
+  .expense-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .expense-form .note-field,.expense-form .receipt-field,.expense-form .form-primary{grid-column:auto}
+}
+
+@media(max-width:600px){
+  .expense-form{grid-template-columns:1fr}
+  .expense-list article{grid-template-columns:42px minmax(0,1fr) auto}
+  .receipt-thumb{grid-column:2/3;width:86px;height:70px}
+  .expense-list article>strong{grid-column:3;grid-row:1/3;align-self:start;margin-top:12px}
+  .expense-list article>.expense-actions{grid-column:2/4;justify-content:flex-end}
+}
+
+/* Fitxa de l'allotjament */
+.main-nav button,.main-nav a{border:0;background:none;cursor:pointer;font-size:13px;font-weight:700}
+.main-nav button:hover,.main-nav a:hover{color:var(--green)}
+.lodging-section{scroll-margin-top:72px;padding-top:82px}
+.lodging-heading{display:flex;align-items:end;justify-content:space-between;gap:35px;margin-bottom:30px}
+.lodging-heading>div:first-child{max-width:720px}
+.lodging-heading h2{font-family:Georgia,serif;font-size:clamp(40px,5vw,62px);font-weight:400;line-height:1.04;letter-spacing:-.035em;margin:0}
+.lodging-heading>div:first-child>p:last-child{max-width:640px;margin:18px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
+.lodging-booking{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;padding:18px 22px;border-radius:7px;background:var(--deep);color:white;box-shadow:var(--shadow)}
+.lodging-booking small{color:var(--lime);font-size:8px;font-weight:900;letter-spacing:.15em}
+.lodging-booking strong{font-family:Georgia,serif;font-size:20px;font-weight:400}
+.lodging-booking span{font-size:11px;color:#d3e3de}
+.lodging-feature{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);overflow:hidden;border:1px solid var(--line);border-radius:9px;background:var(--paper);box-shadow:var(--shadow)}
+.lodging-photo{position:relative;min-height:430px;margin:0;background:#dfe9e1;overflow:hidden}
+.lodging-photo img{width:100%;height:100%;position:absolute;inset:0;display:block;object-fit:cover}
+.lodging-photo:after{content:"";position:absolute;inset:auto 0 0;height:32%;background:linear-gradient(transparent,rgba(7,39,34,.72));pointer-events:none}
+.lodging-photo figcaption{position:absolute;z-index:2;left:22px;right:22px;bottom:18px;display:flex;justify-content:space-between;gap:18px;color:#fff;font-size:10px;font-weight:800}
+.lodging-photo figcaption a{color:var(--lime);white-space:nowrap}
+.lodging-summary{display:flex;flex-direction:column;justify-content:center;padding:34px}
+.lodging-intro{margin:0 0 24px;font-family:Georgia,serif;font-size:21px;line-height:1.55;color:var(--deep)}
+.lodging-highlights{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lodging-highlights span{display:flex;align-items:center;gap:8px;padding:11px 12px;border:1px solid var(--line);border-radius:5px;background:#f4f6f0;font-size:11px;color:#46635a}
+.lodging-highlights b{color:var(--ink)}
+.lodging-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:25px}
+.lodging-actions a{min-height:42px;display:inline-flex;align-items:center;padding:0 13px;border:1px solid #aebeb7;border-radius:4px;color:var(--green);font-size:10px;font-weight:900}
+.lodging-actions .lodging-primary{border-color:var(--lime);color:var(--deep)}
+.lodging-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.lodging-card{padding:25px;border:1px solid var(--line);border-radius:7px;background:var(--paper)}
+.lodging-card>span{font-size:8px;font-weight:900;letter-spacing:.14em;color:var(--green)}
+.lodging-card h3{margin:8px 0 18px;font-family:Georgia,serif;font-size:24px;font-weight:400;color:var(--deep)}
+.lodging-card ul{margin:0;padding-left:18px}
+.lodging-card li,.lodging-card p{margin:8px 0;color:#50675f;font-size:11px;line-height:1.55}
+.lodging-card.confirmed{border-top:4px solid var(--green)}
+.lodging-card.pending-card{border-top:4px solid #d79b51;background:#fffaf1}
+.lodging-card.layout-card{border-top:4px solid #6e9ab7}
+.lodging-note{padding:13px;border-left:3px solid #6e9ab7;background:#eef4f7}
+.lodging-card .check-item{margin-top:17px;padding-top:14px;border-top:1px solid rgba(92,106,98,.18)}
+.lodging-practical{display:grid;grid-template-columns:42px 1fr;align-items:start;gap:14px;margin-top:16px;padding:20px 23px;border-radius:6px;background:#edf3e8}
+.lodging-practical>span{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:var(--deep);color:var(--lime);font-weight:900}
+.lodging-practical p{margin:0;color:#405c53;font-size:12px;line-height:1.65}
+
+@media(max-width:900px){
+  .lodging-heading{align-items:start}
+  .lodging-feature{grid-template-columns:1fr}
+  .lodging-photo{min-height:400px}
+  .lodging-grid{grid-template-columns:1fr 1fr}
+  .lodging-card.pending-card{grid-column:1/-1}
+}
+
+@media(max-width:600px){
+  .lodging-section{padding-top:58px}
+  .lodging-heading{display:block}
+  .lodging-heading>div:first-child>p:last-child{font-size:15px}
+  .lodging-booking{margin-top:20px}
+  .lodging-photo{min-height:260px}
+  .lodging-photo figcaption{display:block;left:14px;right:14px;bottom:13px;font-size:10px}
+  .lodging-photo figcaption a{display:block;margin-top:5px}
+  .lodging-summary{padding:22px 18px}
+  .lodging-intro{font-size:19px}
+  .lodging-highlights{grid-template-columns:1fr}
+  .lodging-highlights span{font-size:13px}
+  .lodging-actions a{flex:1 1 135px;justify-content:center;min-height:45px;font-size:12px}
+  .lodging-grid{grid-template-columns:1fr}
+  .lodging-card.pending-card{grid-column:auto}
+  .lodging-card li,.lodging-card p{font-size:14px;line-height:1.6}
+  .lodging-card>span{font-size:10px}
+  .lodging-practical{grid-template-columns:1fr}
+  .lodging-practical p{font-size:14px}
 }
