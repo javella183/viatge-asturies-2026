@@ -307,3 +307,42 @@
   .tool-actions{width:100%}
   .tool-actions button{flex:1 1 140px;font-size:12px}
 }
+
+/* Fitxes de visita, ressenyes i alternatives */
+.day-detail{scroll-margin-top:145px}
+.timeline-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.timeline-links a{display:inline-flex;align-items:center;min-height:32px;padding:6px 9px;border:1px solid #b8c8c1;border-radius:4px;background:#f8faf5;color:var(--green);font-size:10px;font-weight:900}
+.timeline-links .review-action,.place-actions .review-action,.reservation-actions .review-action{background:#fff4d8;border-color:#e5c970;color:#735713}
+.timeline-alternative{margin-top:11px;padding:12px 14px;border-left:3px solid #d99d56;border-radius:4px;background:#fff5e8;display:flex;flex-direction:column;gap:4px}
+.timeline-alternative>span,.restaurant-alternative>small{font-size:8px;letter-spacing:.12em;font-weight:900;color:#8b642c}
+.timeline-alternative>strong{font-family:Georgia,serif;font-size:16px;font-weight:400}
+.timeline-alternative>small{font-size:10px;color:var(--muted)}
+.timeline-alternative>div,.restaurant-alternative>div{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.timeline-alternative a,.restaurant-alternative a{padding:7px 8px;border:1px solid #ddc49c;border-radius:4px;background:white;color:#6a573c;font-size:9px;font-weight:900}
+.visit-details{margin:12px 0 22px;border:1px solid #cbd8d2;border-radius:6px;background:#f6f8f3;overflow:hidden}
+.visit-details summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;color:var(--green);font-size:10px;font-weight:900}
+.visit-details summary::-webkit-details-marker{display:none}
+.plus-icon{width:25px;height:25px;flex:0 0 25px;border-radius:50%;display:grid;place-items:center;background:var(--deep);color:white;font-size:18px;line-height:1;transition:transform .2s ease}
+.visit-details[open] .plus-icon{transform:rotate(45deg)}
+.visit-card{border-top:1px solid #cbd8d2}
+.visit-card>img{display:block;width:100%;height:220px;object-fit:cover;background:#dfe7e2}
+.visit-card>div{padding:15px}
+.visit-card>div>p{margin:0;color:#3f5951;font-size:12px;line-height:1.65}
+.visit-card>div>div{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.visit-card a{padding:8px 10px;border-radius:4px;background:#e5eee8;color:var(--green);font-size:9px;font-weight:900}
+.restaurant-alternative{padding:14px;border:1px solid #efd4ac;border-radius:5px;background:#fff7eb;display:flex;flex-direction:column;gap:5px}
+.restaurant-alternative>strong{font-family:Georgia,serif;font-size:18px;font-weight:400}
+.restaurant-alternative>span{font-size:10px;color:var(--muted)}
+
+@media(max-width:600px){
+  .day-detail{scroll-margin-top:125px}
+  .timeline-links a{font-size:12px;min-height:38px}
+  .timeline-alternative>span,.restaurant-alternative>small{font-size:10px}
+  .timeline-alternative>strong{font-size:19px}
+  .timeline-alternative>small,.restaurant-alternative>span{font-size:12px}
+  .timeline-alternative a,.restaurant-alternative a{font-size:11px;padding:8px 9px}
+  .visit-details summary{font-size:13px;padding:12px}
+  .visit-card>img{height:190px}
+  .visit-card>div>p{font-size:14px;line-height:1.65}
+  .visit-card a{font-size:11px;padding:9px 10px}
+}

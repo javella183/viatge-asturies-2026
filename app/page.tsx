@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { contacts, days, shops, tasks, type Contact } from "./trip-data";
+import { contacts, days, maps, shops, tasks, type Contact } from "./trip-data";
 
 type TabKey = "itinerari" | "compres" | "maleta" | "reserves" | "control";
 type CheckedState = Record<string, boolean>;
@@ -70,6 +70,122 @@ const reservationRows = [
   { taskId: "piguena", contactId: "piguena", title: "El Pigüeña", date: "22/08 · 13:45", cost: "48–60 €" },
 ];
 
+type RestaurantAlternative = {
+  name: string;
+  detail: string;
+  phone?: string;
+  phoneLabel?: string;
+  map: string;
+  reviews: string;
+};
+
+const restaurantIds = new Set(["yumay", "cafetin", "puerto", "piguena", "chigre"]);
+
+const restaurantAlternatives: Record<string, RestaurantAlternative> = {
+  yumay: {
+    name: "Casa Tataguyo",
+    detail: "Plaça del Carbayedo, 6 · Avilés",
+    phone: "+34985564815",
+    phoneLabel: "985 564 815",
+    map: maps("Casa Tataguyo Avilés"),
+    reviews: maps("Casa Tataguyo Avilés ressenyes"),
+  },
+  cafetin: {
+    name: "El Barrigón de Bertín",
+    detail: "C. San José · Llastres",
+    phone: "+34985850445",
+    phoneLabel: "985 850 445",
+    map: maps("El Barrigón de Bertín Lastres"),
+    reviews: maps("El Barrigón de Bertín Lastres ressenyes"),
+  },
+  puerto: {
+    name: "Sidrería Bar Matute",
+    detail: "C. Marqués de Canillejas, 4 · Llanes",
+    phone: "+34985401896",
+    phoneLabel: "985 401 896",
+    map: maps("Sidrería Bar Matute Llanes"),
+    reviews: maps("Sidrería Bar Matute Llanes ressenyes"),
+  },
+  piguena: {
+    name: "Sidrería La Manzana",
+    detail: "C. Gascona, 20 · Oviedo",
+    phone: "+34985081919",
+    phoneLabel: "985 081 919",
+    map: maps("Sidrería La Manzana Oviedo"),
+    reviews: maps("Sidrería La Manzana Oviedo ressenyes"),
+  },
+};
+
+const foodStopsByTitle: Record<string, { reviews: string; alternativeId?: string }> = {
+  "Desdejuni · Cafestore Albacete": { reviews: maps("Cafestore Albacete A-31 ressenyes") },
+  "Dinar · Sidreria Yumay": { reviews: maps("Sidrería Yumay Avilés ressenyes"), alternativeId: "yumay" },
+  "Dinar · El Cafetín": { reviews: maps("Restaurante El Cafetín Lastres ressenyes"), alternativeId: "cafetin" },
+  "Sopar · El Puerto": { reviews: maps("Sidrería Restaurante El Puerto Llanes ressenyes"), alternativeId: "puerto" },
+  "Dinar · El Pigüeña": { reviews: maps("Sidrería El Pigüeña Oviedo ressenyes"), alternativeId: "piguena" },
+  "Honrubia · Moya": { reviews: maps("Hotel Restaurante Moya Honrubia ressenyes") },
+};
+
+type VisitDetails = {
+  description: string;
+  image: string;
+  imageAlt: string;
+  source: string;
+};
+
+const commonsImage = (filename: string) => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=1200`;
+const commonsSource = (filename: string) => `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(filename)}`;
+
+const visitDetailsByTitle: Record<string, VisitDetails> = {
+  "Passeig mudèjar": {
+    description: "La Plaça de la Villa concentra l’essència mudèjar d’Arévalo: porxos, façanes de rajola i les esglésies de Santa María i San Martín. És un passeig curt i molt visual per a estirar les cames sense convertir la parada en una visita llarga.",
+    image: commonsImage("Arévalo-Plaza de la Villa -Santa María la Mayor.JPG"), imageAlt: "Plaça de la Villa d’Arévalo", source: commonsSource("Arévalo-Plaza de la Villa -Santa María la Mayor.JPG"),
+  },
+  "Centro Niemeyer": {
+    description: "El conjunt d’Óscar Niemeyer és la imatge contemporània d’Avilés. La plaça exterior permet vore la cúpula, la torre i l’auditori sense necessitat de comprar entrada; la passarel·la sobre la ria completa les millors perspectives.",
+    image: commonsImage("Centro cultural Niemeyer - Ría de Avilés.jpg"), imageAlt: "Centre Niemeyer al costat de la ria d’Avilés", source: commonsSource("Centro cultural Niemeyer - Ría de Avilés.jpg"),
+  },
+  "Cudillero · passeig curt": {
+    description: "Cudillero forma un amfiteatre de cases de colors al voltant del port. La ruta proposada passa per la plaça de la Marina i dos miradors pròxims, evitant les escales més llargues si Cesc ja està cansat.",
+    image: commonsImage("Cudillero Asturias.jpg"), imageAlt: "Cases de colors de Cudillero", source: commonsSource("Cudillero Asturias.jpg"),
+  },
+  "Cap Vidio": {
+    description: "Un dels grans balcons de la costa occidental, amb penya-segats que superen els huitanta metres. El far i les vistes són accessibles amb un passeig curt, però cal mantindre Cesc sempre agafat i no acostar-se a la vora.",
+    image: commonsImage("Cabo Vidio 2.jpg"), imageAlt: "Penya-segats del cap Vidio", source: commonsSource("Cabo Vidio 2.jpg"),
+  },
+  "Platja de San Pedro": {
+    description: "Platja ampla amb zona recreativa i serveis, pensada com la parada tranquil·la del dia. És adequada per al pícnic i el descans; el bany dependrà sempre de la bandera i de les indicacions de salvament.",
+    image: commonsImage("Playa de San Pedro de La Ribera.JPG"), imageAlt: "Platja de San Pedro de la Ribera", source: commonsSource("Playa de San Pedro de La Ribera.JPG"),
+  },
+  "MUJA": {
+    description: "El Museu del Juràssic d’Astúries té forma de gran petjada tridàctila. Dins recorre el Triàsic, Juràssic i Cretaci; fora, els xiquets trobaran reproduccions de dinosaures a escala real amb vista a la costa.",
+    image: "https://www.museojurasicoasturias.com/documents/3175063/0/MUJA.jpg/3ef2b678-0ced-5c39-3c3c-24113ad1fccf?t=1756449929281", imageAlt: "Entrada del Museu del Juràssic d’Astúries", source: "https://www.museojurasicoasturias.com/",
+  },
+  "Llastres · passeig": {
+    description: "Llastres baixa en costera cap al port entre carrerons i cases marineres. El mirador de San Roque dona la vista panoràmica més completa; després convé baixar només el necessari per arribar al dinar sense presses.",
+    image: commonsImage("Lastres of Asturias, Spain at daybreak.jpg"), imageAlt: "Vista de Llastres des del mirador de San Roque", source: commonsSource("Lastres of Asturias, Spain at daybreak.jpg"),
+  },
+  "Tazones": {
+    description: "Xicotet port mariner lligat a l’arribada de Carles V a Espanya. El més agradable és passejar pels barris de San Miguel i San Roque, buscar la Casa de les Conquilles i acabar al moll.",
+    image: commonsImage("Tazones Asturias.jpg"), imageAlt: "Poble mariner de Tazones", source: commonsSource("Tazones Asturias.jpg"),
+  },
+  "Ruta curta familiar": {
+    description: "La ruta uneix els llacs Ercina i Enol amb miradors, antigues mines i prats de muntanya. Són uns tres quilòmetres, però convé reservar temps per a parar, fer fotos i caminar al ritme de Cesc.",
+    image: commonsImage("Vistas lagos de covadonga 04.jpg"), imageAlt: "Llac Ercina als Lagos de Covadonga", source: commonsSource("Vistas lagos de covadonga 04.jpg"),
+  },
+  "Cuevas del Mar": {
+    description: "La platja destaca pels grans arcs de roca calcària modelats per la mar. Amb marea baixa es veuen millor les formes, però les roques poden relliscar: Cesc ha d’anar sempre acompanyat.",
+    image: commonsImage("Playa cuevas del mar 3.jpg"), imageAlt: "Arcs de roca a la platja de Cuevas del Mar", source: commonsSource("Playa cuevas del mar 3.jpg"),
+  },
+  "Llanes": {
+    description: "El passeig concentra la muralla, el nucli històric, el port i els Cubos de la Memoria. El tram des del Sablón fins al port és curt i deixa el restaurant a mà per acabar el dia sense tornar a moure el cotxe.",
+    image: commonsImage("Llanes - Puerto 1.jpg"), imageAlt: "Port de Llanes", source: commonsSource("Llanes - Puerto 1.jpg"),
+  },
+  "Santa María + San Miguel": {
+    description: "Santa María del Naranco i San Miguel de Lillo són les peces més representatives del preromànic asturià. Estan molt pròximes entre si i la visita guiada ajuda a entendre per què són Patrimoni Mundial.",
+    image: commonsImage("Santa María del Naranco, Oviedo.jpg"), imageAlt: "Santa María del Naranco a Oviedo", source: commonsSource("Santa María del Naranco, Oviedo.jpg"),
+  },
+};
+
 const legacyTaskMap: Record<string, string[]> = {
   "0-0": ["casal-arribada"], "0-1": ["casal-cuina"], "0-2": ["tigu-revisio"], "0-3": ["v16-docs"], "0-4": ["rutes-offline"],
   "1-0": ["yumay"], "1-1": ["muja", "cafetin"], "1-2": ["lagos"], "1-3": ["puerto"], "1-4": ["piguena"],
@@ -87,14 +203,27 @@ function TaskCheck({ id, checked, onToggle, compact = false, label }: { id: stri
 }
 
 function ContactCard({ contact, small = false }: { contact: Contact; small?: boolean }) {
+  const alternative = restaurantAlternatives[contact.id];
+  const showReviews = restaurantIds.has(contact.id);
   return (
     <article className={`place-card ${small ? "small" : ""}`}>
       <div className="place-copy"><small>CONTACTE</small><h3>{contact.name}</h3><p>{contact.detail}</p>{contact.note && <em>{contact.note}</em>}</div>
       <div className="place-actions">
         {contact.phone && <a className="call-action" href={`tel:${contact.phone}`}>☎ {contact.phoneLabel}</a>}
         <a href={contact.map} target="_blank" rel="noreferrer">Maps ↗</a>
+        {showReviews && <a className="review-action" href={maps(`${contact.name} ressenyes`)} target="_blank" rel="noreferrer">★ Ressenyes Google</a>}
         {contact.web && <a href={contact.web} target="_blank" rel="noreferrer">Web ↗</a>}
       </div>
+      {alternative && <div className="restaurant-alternative">
+        <small>ALTERNATIVA SI ESTÀ COMPLET</small>
+        <strong>{alternative.name}</strong>
+        <span>{alternative.detail}</span>
+        <div>
+          {alternative.phone && <a href={`tel:${alternative.phone}`}>☎ {alternative.phoneLabel}</a>}
+          <a href={alternative.map} target="_blank" rel="noreferrer">Maps ↗</a>
+          <a href={alternative.reviews} target="_blank" rel="noreferrer">★ Ressenyes</a>
+        </div>
+      </div>}
     </article>
   );
 }
@@ -274,7 +403,9 @@ export default function Home() {
 
   const chooseDay = (id: number) => {
     setActiveDay(id);
-    jump("itinerari");
+    setTab("itinerari");
+    setMenuOpen(false);
+    window.setTimeout(() => document.getElementById(`itinerari-dia-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
 
   return (
@@ -322,14 +453,22 @@ export default function Home() {
 
         {tab === "itinerari" && <div className="tab-panel">
           <div className="filter-row"><div><p className="kicker">ITINERARI DETALLAT</p><h2>Tria la jornada</h2></div><div className="filters">{[['tots','Tots'],['costa','Costa'],['natura','Natura'],['ciutat','Ciutat'],['ruta','Carretera']].map(([key,label]) => <button key={key} onClick={() => setFilter(key)} className={filter === key ? "active" : ""}>{label}</button>)}</div></div>
-          <div className="day-grid">{filteredDays.map((day) => <button key={day.id} className={`day-card ${day.color} ${activeDay === day.id ? "selected" : ""}`} onClick={() => setActiveDay(day.id)}><div className="day-card-top"><span>DIA {day.id}</span><i>{day.icon}</i></div><small>{day.date}</small><h3>{day.title}</h3><p>{day.subtitle}</p><div className="day-stats"><span>{day.distance}</span><span>{day.budget}</span></div></button>)}</div>
+          <div className="day-grid">{filteredDays.map((day) => <button key={day.id} className={`day-card ${day.color} ${activeDay === day.id ? "selected" : ""}`} onClick={() => chooseDay(day.id)}><div className="day-card-top"><span>DIA {day.id}</span><i>{day.icon}</i></div><small>{day.date}</small><h3>{day.title}</h3><p>{day.subtitle}</p><div className="day-stats"><span>{day.distance}</span><span>{day.budget}</span></div></button>)}</div>
 
-          <article className={`day-detail ${selected.color}`}>
+          <article className={`day-detail ${selected.color}`} id={`itinerari-dia-${selected.id}`}>
             <div className="detail-head"><div className="detail-number">{String(selected.id).padStart(2,"0")}</div><div><p>{selected.date}</p><h2>{selected.title}</h2><span>{selected.subtitle}</span></div><a href={selected.map} target="_blank" rel="noreferrer" className="map-button">Ruta completa en Maps ↗</a></div>
             <div className="detail-facts"><div><small>DISTÀNCIA</small><strong>{selected.distance}</strong></div><div><small>CONDUCCIÓ</small><strong>{selected.driving}</strong></div><div><small>PRESSUPOST</small><strong>{selected.budget}</strong></div></div>
             <div className="day-brief"><div><small>OBJECTIU REAL DEL DIA</small><p>{selected.objective}</p></div><div className="weather-brief"><small>DECISIÓ D’ORATGE</small><p>{selected.weather}</p></div></div>
             <div className="detail-columns">
-              <div className="timeline"><h3>Horari pas a pas</h3>{selected.schedule.map((item, index) => <div className="timeline-item" key={`${selected.id}-${index}`}><time>{item.time}</time><span className="timeline-dot"/><div className="timeline-copy"><div><strong>{item.title}</strong>{item.tag && <em>{item.tag}</em>}</div><p>{item.note}</p>{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir ubicació ↗</a>}</div></div>)}</div>
+              <div className="timeline"><h3>Horari pas a pas</h3>{selected.schedule.map((item, index) => {
+                const visit = visitDetailsByTitle[item.title];
+                const foodStop = foodStopsByTitle[item.title];
+                const alternative = foodStop?.alternativeId ? restaurantAlternatives[foodStop.alternativeId] : undefined;
+                return <div className="timeline-item" key={`${selected.id}-${index}`}><time>{item.time}</time><span className="timeline-dot"/><div className="timeline-copy"><div><strong>{item.title}</strong>{item.tag && <em>{item.tag}</em>}</div><p>{item.note}</p><div className="timeline-links">{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir ubicació ↗</a>}{foodStop && <a className="review-action" href={foodStop.reviews} target="_blank" rel="noreferrer">★ Ressenyes Google ↗</a>}</div>
+                  {alternative && <div className="timeline-alternative"><span>Alternativa si està complet</span><strong>{alternative.name}</strong><small>{alternative.detail}</small><div>{alternative.phone && <a href={`tel:${alternative.phone}`}>☎ {alternative.phoneLabel}</a>}<a href={alternative.map} target="_blank" rel="noreferrer">Maps ↗</a><a href={alternative.reviews} target="_blank" rel="noreferrer">Ressenyes ↗</a></div></div>}
+                  {visit && <details className="visit-details"><summary><span className="plus-icon">+</span><span>Veure descripció i foto</span></summary><div className="visit-card"><img src={visit.image} alt={visit.imageAlt} loading="lazy"/><div><p>{visit.description}</p><div><a href={item.map} target="_blank" rel="noreferrer">Obrir en Maps ↗</a><a href={visit.source} target="_blank" rel="noreferrer">Font de la foto ↗</a></div></div></div></details>}
+                </div></div>;
+              })}</div>
               <aside className="day-aside">
                 <div className="info-card food-card"><span>MENJARS</span><p>{selected.food}</p></div>
                 <div className="info-card"><span>RECORREGUT A PEU</span><p>{selected.walk}</p></div>
@@ -341,7 +480,7 @@ export default function Home() {
             </div>
             <section className="day-actions"><div className="subheading"><div><p className="kicker">PREPARACIÓ GUARDADA</p><h3>Marca ací o en «Llistes»</h3></div><span>{selected.taskIds.filter((id) => checked[id]).length}/{selected.taskIds.length}</span></div><div className="inline-checks">{selected.taskIds.map((id) => <TaskCheck key={id} id={id} label={taskLabels[id]} checked={!!checked[id]} onToggle={toggleTask} compact/>)}</div></section>
             {selected.contactIds.length > 0 && <section className="day-contacts"><p className="kicker">TELÈFONS I ENLLAÇOS DEL DIA</p><div className="places-grid">{selected.contactIds.map((id) => <ContactCard key={id} contact={contactById[id]} small/>)}</div></section>}
-            <div className="day-switch"><button disabled={selected.id === 1} onClick={() => setActiveDay(selected.id - 1)}>← Dia anterior</button><span>{selected.id} / 8</span><button disabled={selected.id === 8} onClick={() => setActiveDay(selected.id + 1)}>Dia següent →</button></div>
+            <div className="day-switch"><button disabled={selected.id === 1} onClick={() => chooseDay(selected.id - 1)}>← Dia anterior</button><span>{selected.id} / 8</span><button disabled={selected.id === 8} onClick={() => chooseDay(selected.id + 1)}>Dia següent →</button></div>
           </article>
         </div>}
 
@@ -381,7 +520,7 @@ export default function Home() {
 
         {tab === "reserves" && <div className="tab-panel simple-panel">
           <div className="panel-intro"><p className="kicker">RESERVES I CONTACTES</p><h2>Telefonar, reservar i arribar.</h2><p>Cada targeta permet cridar, obrir la ubicació o consultar la web. L’estat està vinculat amb els itineraris i les llistes.</p></div>
-          <div className="reservation-cards">{reservationRows.map((row) => { const contact = contactById[row.contactId]; const done = !!checked[row.taskId]; return <article className={`reservation-card ${done ? "done" : ""}`} key={row.taskId}><div className="reservation-top"><span className={`status ${done ? "confirmed" : "pending"}`}>{done ? "Completada" : "Pendent"}</span><b>{row.cost}</b></div><h3>{row.title}</h3><p>{row.date}</p><div className="reservation-actions">{contact.phone && <a href={`tel:${contact.phone}`} className="call-action">☎ {contact.phoneLabel}</a>}<a href={contact.map} target="_blank" rel="noreferrer">Maps ↗</a>{contact.web && <a href={contact.web} target="_blank" rel="noreferrer">Web ↗</a>}</div><TaskCheck id={row.taskId} label={taskLabels[row.taskId]} checked={done} onToggle={toggleTask} compact/></article>; })}</div>
+          <div className="reservation-cards">{reservationRows.map((row) => { const contact = contactById[row.contactId]; const done = !!checked[row.taskId]; return <article className={`reservation-card ${done ? "done" : ""}`} key={row.taskId}><div className="reservation-top"><span className={`status ${done ? "confirmed" : "pending"}`}>{done ? "Completada" : "Pendent"}</span><b>{row.cost}</b></div><h3>{row.title}</h3><p>{row.date}</p><div className="reservation-actions">{contact.phone && <a href={`tel:${contact.phone}`} className="call-action">☎ {contact.phoneLabel}</a>}<a href={contact.map} target="_blank" rel="noreferrer">Maps ↗</a>{restaurantIds.has(contact.id) && <a className="review-action" href={maps(`${contact.name} ressenyes`)} target="_blank" rel="noreferrer">★ Ressenyes</a>}{contact.web && <a href={contact.web} target="_blank" rel="noreferrer">Web ↗</a>}</div><TaskCheck id={row.taskId} label={taskLabels[row.taskId]} checked={done} onToggle={toggleTask} compact/></article>; })}</div>
           <div className="contact-section"><div className="subheading"><div><p className="kicker">ALTRES CONTACTES ÚTILS</p><h3>Base i necessitats familiars</h3></div></div><div className="places-grid">{["chigre","farmacia","naranco"].map((id) => <ContactCard key={id} contact={contactById[id]} small/>)}</div></div>
           <div className="emergency-card"><span>URGÈNCIES</span><strong>112</strong><p>Per a assistència urgent sanitària, salvament o emergència. En platja, respectar sempre bandera i socorrisme.</p><a href="tel:112">Telefonar al 112</a></div>
         </div>}
