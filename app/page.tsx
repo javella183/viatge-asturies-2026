@@ -46,6 +46,7 @@ const STORAGE = {
   customTasks: "asturies-custom-tasks-v1",
   taskLabels: "asturies-task-labels-v1",
   shopping: "asturies-shopping-v1",
+  shoppingSchema: "asturies-shopping-schema-v3",
 };
 
 const categories = [
@@ -55,16 +56,25 @@ const categories = [
 
 const paymentMethods = ["Per indicar", "Efectiu", "Targeta de dèbit", "Targeta de crèdit"];
 const payers = ["Per indicar", "Josep", "Caty"];
-const shoppingGroups = ["Des de Xaló", "Alimerka Avilés", "Alimerka El Prestín", "Desdejunis", "Pícnics", "Sopars", "Altres"];
-const shopGroupById: Record<string, string> = { xalo: "Des de Xaló", aviles: "Alimerka Avilés", prestin: "Alimerka El Prestín" };
+const homeFoodGroup = "Menjar per a agafar de casa";
+const shoppingGroups = [homeFoodGroup, "Alimerka Avilés", "Alimerka El Prestín", "Desdejunis", "Pícnics", "Sopars", "Altres"];
+const shopGroupById: Record<string, string> = { xalo: homeFoodGroup, aviles: "Alimerka Avilés", prestin: "Alimerka El Prestín" };
 
 const initialExpenses: Expense[] = [
   { id: "allotjament-el-casal", day: 1, concept: "Apartamentos El Casal", category: "Allotjament", amount: 725, note: "7 nits", paymentMethod: "Per indicar", paidBy: "Per indicar", createdAt: "2026-08-09T12:00:00.000Z" },
 ];
 
 const initialShopping: ShoppingItem[] = [
-  { id: "shop-cafe", label: "Café", quantity: "per a 8 dies", group: "Des de Xaló", checked: false },
-  { id: "shop-pernil", label: "Pernil serrà", quantity: "1 paquet", group: "Des de Xaló", checked: false },
+  { id: "shop-cafe", label: "Café", quantity: "per a 8 dies", group: homeFoodGroup, checked: false },
+  { id: "shop-pernil", label: "Pernil salat", quantity: "1 paquet", group: homeFoodGroup, checked: false },
+  { id: "shop-pavo", label: "Pernil de pavo", quantity: "600–700 g", group: homeFoodGroup, checked: false },
+  { id: "shop-anxoves", label: "Anxoves", quantity: "2 llandes o pots", group: homeFoodGroup, checked: false },
+  { id: "shop-tomaques-casa", label: "Tomaques fermes", quantity: "8–10 unitats", group: homeFoodGroup, checked: false },
+  { id: "shop-pa-casa", label: "Pa", quantity: "per al trajecte i primer desdejuni", group: homeFoodGroup, checked: false },
+  { id: "shop-llet-casa", label: "Llet", quantity: "1 litre", group: homeFoodGroup, checked: false },
+  { id: "shop-ous-casa", label: "Ous", quantity: "6 unitats", group: homeFoodGroup, checked: false },
+  { id: "shop-ensalada-casa", label: "Encisam i olives", quantity: "per al sopar d’arribada", group: homeFoodGroup, checked: false },
+  { id: "shop-oli-casa", label: "Oli d’oliva i sal", quantity: "només si El Casal no en té", group: homeFoodGroup, checked: false },
   { id: "shop-pa", label: "Pa per a congelar", quantity: "segons espai", group: "Alimerka Avilés", checked: false },
   { id: "shop-llet", label: "Llet", quantity: "2–3 litres", group: "Alimerka Avilés", checked: false },
   { id: "shop-tomaca", label: "Tomaca, encisam i olives", quantity: "per a ensalades", group: "Alimerka Avilés", checked: false },
@@ -473,7 +483,19 @@ export default function Home() {
       try { setTaskLabels(JSON.parse(localStorage.getItem(STORAGE.taskLabels) || "{}")); } catch { setTaskLabels({}); }
       try {
         const savedShopping = JSON.parse(localStorage.getItem(STORAGE.shopping) || "null") || initialShopping;
-        setShoppingItems(savedShopping.map((item: ShoppingItem) => ({ ...item, group: item.group === "Compra principal" ? "Alimerka Avilés" : item.group })));
+        let migratedShopping = savedShopping
+          .filter((item: ShoppingItem) => !item.label.toLocaleLowerCase("ca").includes("cacau"))
+          .map((item: ShoppingItem) => ({
+            ...item,
+            label: item.label.replace(/pernil serrà/gi, "Pernil salat").replace(/titot/gi, "pavo"),
+            group: item.group === "Compra principal" ? "Alimerka Avilés" : item.group === "Des de Xaló" ? homeFoodGroup : item.group,
+          }));
+        if (localStorage.getItem(STORAGE.shoppingSchema) !== "3") {
+          const existingIds = new Set(migratedShopping.map((item: ShoppingItem) => item.id));
+          migratedShopping = [...migratedShopping, ...initialShopping.filter((item) => !existingIds.has(item.id))];
+          localStorage.setItem(STORAGE.shoppingSchema, "3");
+        }
+        setShoppingItems(migratedShopping);
       } catch { setShoppingItems(initialShopping); }
       setHydrated(true);
     }, 0);
@@ -924,8 +946,8 @@ export default function Home() {
             <label><span>Grup</span><select value={newShopping.group} onChange={(event) => setNewShopping((current) => ({ ...current, group: event.target.value }))}>{shoppingGroups.map((group) => <option key={group}>{group}</option>)}</select></label>
             <button className="form-primary" type="submit">+ Afegir</button>
           </form>
-          <div className="subheading store-heading"><div><p className="kicker">ON COMPRAR</p><h3>Supermercats i llista de cada compra</h3></div></div>
-          <div className="store-list compact-stores">{shops.map((shop, index) => { const group = shopGroupById[shop.id]; const items = shoppingItems.filter((item) => item.group === group); return <article className="store-card store-with-list" key={shop.id}><div className="shopping-index">🛒</div><div className="store-main"><small>COMPRA {String(index + 1).padStart(2, "0")} · {shop.note}</small><h3>{shop.when}</h3><address>{shop.address}</address><p>{shop.items}</p><div className="store-actions"><a href={shop.map} target="_blank" rel="noreferrer">Google Maps ↗</a>{shop.web && <a href={shop.web} target="_blank" rel="noreferrer">Fitxa i horari ↗</a>}<button onClick={() => { setNewShopping((current) => ({ ...current, group })); document.getElementById("shopping-add-form")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>+ Afegir a esta compra</button></div><div className="store-shopping"><div className="shopping-group-head"><h4><span>🛒</span> Dins de la cistella</h4><b>{items.filter((item) => item.checked).length}/{items.length}</b></div>{items.length ? items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Traure" : "Posar"} ${item.label} ${item.checked ? "de" : "en"} la cistella`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>) : <p className="empty-state">Encara no hi ha productes en esta compra.</p>}</div><TaskCheck id={shop.taskId} label={taskLabels[shop.taskId]} checked={!!checked[shop.taskId]} onToggle={toggleTask} compact/></div></article>; })}</div>
+          <div className="subheading store-heading"><div><p className="kicker">MENJAR I SUPERMERCATS</p><h3>Què agafem de casa i què comprem allí</h3></div></div>
+          <div className="store-list compact-stores">{shops.map((shop, index) => { const group = shopGroupById[shop.id]; const items = shoppingItems.filter((item) => item.group === group); const isHomeFood = shop.id === "xalo"; return <article className="store-card store-with-list" key={shop.id}><div className="shopping-index">{isHomeFood ? "🏠" : "🛒"}</div><div className="store-main"><small>{isHomeFood ? "MENJAR DE CASA" : `COMPRA ${String(index).padStart(2, "0")}`} · {shop.note}</small><h3>{shop.when}</h3><address>{shop.address}</address><p>{shop.items}</p><div className="store-actions"><a href={shop.map} target="_blank" rel="noreferrer">Google Maps ↗</a>{shop.web && <a href={shop.web} target="_blank" rel="noreferrer">Fitxa i horari ↗</a>}<button onClick={() => { setNewShopping((current) => ({ ...current, group })); document.getElementById("shopping-add-form")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>+ {isHomeFood ? "Afegir menjar de casa" : "Afegir a esta compra"}</button></div><div className="store-shopping"><div className="shopping-group-head"><h4><span>{isHomeFood ? "🏠" : "🛒"}</span> {isHomeFood ? "Preparat per a carregar" : "Dins de la cistella"}</h4><b>{items.filter((item) => item.checked).length}/{items.length}</b></div>{items.length ? items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.label}`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>) : <p className="empty-state">Encara no hi ha aliments en esta llista.</p>}</div><TaskCheck id={shop.taskId} label={taskLabels[shop.taskId]} checked={!!checked[shop.taskId]} onToggle={toggleTask} compact/></div></article>; })}</div>
           <div className="subheading store-heading"><div><p className="kicker">ALTRES LLISTES</p><h3>Desdejunis, pícnics i sopars</h3></div></div>
           <div className="shopping-groups">{shoppingGroups.filter((group) => !Object.values(shopGroupById).includes(group)).map((group) => { const items = shoppingItems.filter((item) => item.group === group); if (!items.length) return null; return <section key={group}><div className="shopping-group-head"><h3><span className="basket-emoji">🛒</span>{group}</h3><span>{items.filter((item) => item.checked).length}/{items.length}</span></div>{items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.label}`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>)}</section>; })}</div>
           <div className="menu-bank"><h3>Rotació familiar</h3><div><span>Hamburgueses + ensalada</span><span>Salmó + ensalada</span><span>Pollastre + verdura</span><span>Pizzes congelades</span><span>Llom + arròs</span><span>Pasta + tonyina</span></div></div>

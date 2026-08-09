@@ -260,12 +260,17 @@
 .shopping-group-head span,.summary-title span{display:grid;place-items:center;min-width:30px;height:30px;padding:0 7px;border-radius:20px;background:#edf4ef;color:var(--green);font-size:10px;font-weight:900}
 .managed-item,.managed-check-row{display:flex;align-items:center;gap:8px;border-bottom:1px solid #e2e8e4}
 .managed-item:last-child,.managed-check-row:last-child{border-bottom:0}
-.managed-item.done{color:#687b74;background:#f5f7f2}
+.managed-item.done{color:#38534b;background:#edf4cf;border-left:4px solid var(--green);padding-left:6px}
 .managed-toggle{flex:1;display:flex;align-items:center;gap:10px;min-width:0;border:0;background:none;text-align:left;padding:13px 4px;cursor:pointer}
 .managed-toggle>b{font-size:13px}
 .managed-toggle>span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}
 .managed-toggle small{font-size:10px;color:var(--muted)}
-.managed-item.done b{text-decoration:line-through}
+.managed-item.done .managed-toggle b,
+.managed-item.done .managed-toggle small{
+  text-decoration:line-through;
+  text-decoration-thickness:2px;
+  text-decoration-color:#48665c;
+}
 .item-actions{display:flex;gap:4px;flex:0 0 auto}
 .item-actions button,.edit-mini,.delete-mini{width:32px;height:32px;border:1px solid var(--line);border-radius:4px;background:white;color:var(--muted);cursor:pointer;font-size:15px}
 .item-actions button:hover,.edit-mini:hover{border-color:var(--green);color:var(--green)}
@@ -685,26 +690,27 @@
 }
 
 /* Llegibilitat ampliada i mapa familiar final */
-body{font-size:17px;line-height:1.55}
-.brand{font-size:15px}.main-nav button,.main-nav a{font-size:15px}
-.hero-lead{font-size:20px}.primary,.secondary{font-size:15px}
-.quick-strip small{font-size:10px}.quick-strip strong{font-size:15px}
-.section-heading>p,.panel-intro>p:last-child{font-size:16px}
-.route-rail small{font-size:11px}.route-rail strong{font-size:12px}
-.tabbar button{font-size:14px}.filters button{font-size:13px}
-.day-card-top span{font-size:11px}.day-card>small{font-size:12px}.day-card h3{font-size:27px}.day-card p{font-size:14px}.day-stats{font-size:11px}
-.detail-head p{font-size:12px}.detail-head>div>span{font-size:16px}
-.detail-facts small{font-size:10px}.detail-facts strong{font-size:22px}
-.timeline-item time{font-size:13px}.timeline-item strong{font-size:15px}.timeline-item p{font-size:14px}
-.info-card>span{font-size:11px}.info-card p,.info-card li{font-size:14px}
-.day-switch button{font-size:13px}
-.shopping-list small{font-size:11px}.shopping-list h3{font-size:27px}.shopping-list p{font-size:14px}
-.menu-bank span{font-size:13px}.allergy-note b,.allergy-note p{font-size:13px}
-.check-item{font-size:14px}.table-row{font-size:14px}.table-row.table-head{font-size:10px}
-.contact-card small{font-size:10px}.contact-card p{font-size:14px}
-.budget-hero p,.budget-note{font-size:14px}
-.lodging-highlights span{font-size:13px}.lodging-card li,.lodging-card p{font-size:14px}.lodging-practical p{font-size:14px}
-footer p,footer a{font-size:13px}
+body{font-size:16px;line-height:1.58}
+.brand{font-size:16px}.main-nav button,.main-nav a{font-size:16px}
+.hero-lead{font-size:21px}.primary,.secondary{font-size:16px}
+.quick-strip small{font-size:11px}.quick-strip strong{font-size:16px}
+.section-heading>p,.panel-intro>p:last-child{font-size:17px}
+.route-rail small{font-size:12px}.route-rail strong{font-size:13px}
+.tabbar button{font-size:15px}.filters button{font-size:14px}
+.day-card-top span{font-size:12px}.day-card>small{font-size:13px}.day-card h3{font-size:28px}.day-card p{font-size:15px}.day-stats{font-size:12px}
+.detail-head p{font-size:13px}.detail-head>div>span{font-size:17px}
+.detail-facts small{font-size:11px}.detail-facts strong{font-size:23px}
+.timeline-item time{font-size:14px}.timeline-item strong{font-size:16px}.timeline-item p{font-size:15px}
+.info-card>span{font-size:12px}.info-card p,.info-card li{font-size:15px}
+.day-switch button{font-size:14px}
+.shopping-list small{font-size:12px}.shopping-list h3{font-size:28px}.shopping-list p{font-size:15px}
+.managed-toggle b{font-size:15px}.managed-toggle small{font-size:12px}
+.menu-bank span{font-size:14px}.allergy-note b,.allergy-note p{font-size:14px}
+.check-item{font-size:15px}.table-row{font-size:15px}.table-row.table-head{font-size:11px}
+.contact-card small{font-size:11px}.contact-card p{font-size:15px}
+.budget-hero p,.budget-note{font-size:15px}
+.lodging-highlights span{font-size:14px}.lodging-card li,.lodging-card p{font-size:15px}.lodging-practical p{font-size:15px}
+footer p,footer a{font-size:14px}
 
 .route-map-banner{position:relative;min-height:clamp(650px,56vw,940px);overflow:hidden;background:#e7e2d5}
 .route-map-figure{position:absolute;inset:0;margin:0}
@@ -728,26 +734,27 @@ footer p,footer a{font-size:13px}
 }
 
 @media(max-width:600px){
-  body{font-size:17px}
+  body{font-size:16px;line-height:1.6}
   .brand{font-size:12px}.main-nav button,.main-nav a{font-size:16px}
-  .hero-lead{font-size:17px;line-height:1.7}.primary,.secondary{font-size:14px}
-  .quick-strip small{font-size:10px}.quick-strip strong{font-size:12px}
-  .section-heading>p,.panel-intro>p:last-child{font-size:15px;line-height:1.7}
-  .route-rail small{font-size:11px}.route-rail strong{font-size:12px}
-  .tabbar button,.filters button{font-size:14px}
-  .day-card{min-height:225px}.day-card-top span{font-size:11px}.day-card>small{font-size:12px}.day-card h3{font-size:22px}.day-card p{font-size:13px;line-height:1.55}.day-stats{font-size:11px}
-  .detail-head p{font-size:11px}.detail-head>div>span{font-size:15px}
-  .detail-facts small{font-size:9px}.detail-facts strong{font-size:16px}
-  .timeline-item time{font-size:13px}.timeline-item strong{font-size:16px}.timeline-item p{font-size:15px;line-height:1.6}
-  .info-card>span{font-size:11px}.info-card p,.info-card li{font-size:15px;line-height:1.65}
-  .day-switch button{font-size:13px}
-  .shopping-list small{font-size:11px}.shopping-list h3{font-size:25px}.shopping-list p{font-size:15px}
-  .menu-bank span{font-size:13px}.allergy-note b,.allergy-note p{font-size:14px}
-  .check-item{font-size:15px}.table-row{font-size:14px}.contact-card p{font-size:15px}
-  .budget-hero p,.budget-note{font-size:14px}
+  .hero-lead{font-size:18px;line-height:1.72}.primary,.secondary{font-size:15px}
+  .quick-strip small{font-size:11px}.quick-strip strong{font-size:13px}
+  .section-heading>p,.panel-intro>p:last-child{font-size:16px;line-height:1.72}
+  .route-rail small{font-size:12px}.route-rail strong{font-size:13px}
+  .tabbar button,.filters button{font-size:15px}
+  .day-card{min-height:230px}.day-card-top span{font-size:12px}.day-card>small{font-size:13px}.day-card h3{font-size:23px}.day-card p{font-size:14px;line-height:1.58}.day-stats{font-size:12px}
+  .detail-head p{font-size:12px}.detail-head>div>span{font-size:16px}
+  .detail-facts small{font-size:10px}.detail-facts strong{font-size:17px}
+  .timeline-item time{font-size:14px}.timeline-item strong{font-size:17px}.timeline-item p{font-size:16px;line-height:1.62}
+  .info-card>span{font-size:12px}.info-card p,.info-card li{font-size:16px;line-height:1.68}
+  .day-switch button{font-size:14px}
+  .shopping-list small{font-size:12px}.shopping-list h3{font-size:26px}.shopping-list p{font-size:16px}
+  .managed-toggle b{font-size:16px}.managed-toggle small{font-size:13px}
+  .menu-bank span{font-size:14px}.allergy-note b,.allergy-note p{font-size:15px}
+  .check-item{font-size:16px}.table-row{font-size:15px}.contact-card p{font-size:16px}
+  .budget-hero p,.budget-note{font-size:15px}
   input,select,textarea{font-size:16px}
-  footer p,footer a{font-size:13px}
-  .mobile-nav button{font-size:10px}.mobile-nav button span{font-size:19px}
+  footer p,footer a{font-size:14px}
+  .mobile-nav button{font-size:11px}.mobile-nav button span{font-size:20px}
   .route-map-figure{aspect-ratio:1.35/1}.route-map-figure img{object-position:35% center}
   .route-map-figure figcaption{left:12px;bottom:12px;font-size:11px}
   .route-map-copy{margin:0;padding:34px 18px 42px;border:0;border-radius:0;box-shadow:none}
@@ -755,4 +762,45 @@ footer p,footer a{font-size:13px}
   .route-map-stops{grid-template-columns:1fr;gap:7px}
   .route-map-stops button{grid-template-columns:29px 48px 1fr;min-height:55px;padding:10px 12px}
   .route-map-stops button span{font-size:20px}.route-map-stops button b{font-size:13px}.route-map-stops button small{font-size:13px}
+}
+
+/* Estat completat visible en totes les llistes */
+.check-item.checked{
+  color:#38534b;
+  background:#edf4cf;
+  border-radius:6px;
+  padding-left:8px;
+  padding-right:8px;
+  text-decoration:line-through;
+  text-decoration-thickness:2px;
+  text-decoration-color:#48665c;
+}
+.check-item.checked .checkbox,
+.managed-item.done .checkbox{
+  background:var(--green);
+  border-color:var(--green);
+  box-shadow:0 0 0 3px rgba(15,116,100,.13);
+}
+
+/* Cos de text semblant al del xat en ordinador i mòbil */
+.section-heading>p,.panel-intro>p:last-child,
+.timeline-item p,.info-card p,.info-card li,
+.shopping-list p,.lodging-card li,.lodging-card p,
+.lodging-practical p,.contact-card p,.budget-note,
+.managed-toggle b,.check-item{
+  font-size:16px;
+}
+.managed-toggle small{font-size:14px}
+.add-form input,.add-form select,.add-form textarea{font-size:16px}
+
+@media(max-width:600px){
+  .day-card p{font-size:15px}
+  .section-heading>p,.panel-intro>p:last-child,
+  .timeline-item p,.info-card p,.info-card li,
+  .shopping-list p,.lodging-card li,.lodging-card p,
+  .lodging-practical p,.contact-card p,.budget-note,
+  .managed-toggle b,.check-item{
+    font-size:16px;
+  }
+  .managed-toggle small{font-size:14px}
 }

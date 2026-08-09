@@ -66,6 +66,10 @@ export const tasks: Task[] = [
   { id: "cesc-muda", label: "Calçat segur i muda seca de Cesc", group: "maleta" },
   { id: "nevera", label: "Nevereta, quatre acumuladors, botelles i manta de pícnic", group: "maleta" },
   { id: "medicacio", label: "Medicació accessible i menjar de Lluís separat i identificat", group: "maleta" },
+  { id: "mobils-carregadors", label: "Mòbils i carregadors dels mòbils", group: "maleta" },
+  { id: "rellotges-carregadors", label: "Rellotges i carregadors dels rellotges", group: "maleta" },
+  { id: "bateries-externes", label: "Bateries externes carregades i cables", group: "maleta" },
+  { id: "portatil", label: "Portàtil i carregador", group: "maleta" },
   { id: "dia1-picnic", label: "Preparar entrepans, pícnic d’Arévalo i sopar d’arribada", group: "dia" },
   { id: "compra-aviles", label: "Compra principal feta a l’Alimerka de Cristóbal Colón", group: "dia" },
   { id: "dia3-mar", label: "Revisar AEMET, vent i bandera de San Pedro", group: "dia" },
@@ -137,7 +141,7 @@ export const shops = [
   {
     id: "xalo", when: "Abans d’eixir · Xaló", note: "Sopar del Dia 1 + primers desdejunis",
     address: "Compra de casa · carregar dissabte 15", map: maps("Xaló Alicante"), web: "",
-    items: "Pernil serrà, 8–10 tomaques fermes, 600–700 g de pernil de titot, anxoves, café, pa, 1 l de llet, cacau, 6 ous, encisam i olives. Afegir oli i sal només si El Casal no en té.", taskId: "dia1-picnic",
+    items: "Pernil salat, 8–10 tomaques fermes, 600–700 g de pernil de pavo, anxoves, café, pa, 1 l de llet, 6 ous, encisam i olives. Afegir oli i sal només si El Casal no en té.", taskId: "dia1-picnic",
   },
   {
     id: "aviles", when: "Dl. 17 · 15:35 · Alimerka", note: "Compra principal per als Dies 2–4",
@@ -147,7 +151,7 @@ export const shops = [
   {
     id: "prestin", when: "Dj. 20 · 17:55 · Alimerka", note: "Reposició per als Dies 5–7",
     address: "Parcel·la 211, El Prestín · Parres · 09:00–21:30 · aparcament de 135 places", map: maps("Alimerka El Prestín Parres Asturias"), web: "https://www.alimerka.es/supermercado/cangas-de-onis-prestin/",
-    items: "700–800 g de llom; pa; encisam, tomaques, cogombre, carabasseta i pimentó; llet i iogurts; 300–400 g de titot; aigua i crackers; pasta curta, tonyina, dacsa, olives i ous per al Dia 6; pizzes congelades i ensalada per al Dia 7. Caixa prevista: 50–65 €.", taskId: "compra-prestin",
+    items: "700–800 g de llom; pa; encisam, tomaques, cogombre, carabasseta i pimentó; llet i iogurts; 300–400 g de pavo; aigua i crackers; pasta curta, tonyina, dacsa, olives i ous per al Dia 6; pizzes congelades i ensalada per al Dia 7. Caixa prevista: 50–65 €.", taskId: "compra-prestin",
   },
 ];
 
@@ -166,7 +170,7 @@ export const days: Day[] = [
       { time: "14:40–14:50", title: "Repostatge · Beroil", note: "Posar 25–30 l abans de tornar a l’A-6; estació oberta 24 h.", map: maps("Beroil Arévalo"), tag: "low-cost" },
       { time: "17:00–17:15", title: "Rioseco de Tapia", note: "Lavabo, aigua, canvi de conductor i últim descans funcional.", map: maps("Área de Servicio Rioseco de Tapia AP-66"), tag: "15 min" },
       { time: "18:45–19:15", title: "Arribada a El Casal", note: "Avisar de l’hora real, descarregar, repartir habitacions i refrigerar el menjar.", map: maps("Apartamentos El Casal Illas"), tag: "arribada" },
-      { time: "19:30–20:15", title: "Sopar d’arribada", note: "Ensalada, truita francesa, pernil de titot a la planxa i pa; tot agrupat en una bossa accessible.", tag: "apartament" },
+      { time: "19:30–20:15", title: "Sopar d’arribada", note: "Ensalada, truita francesa, pernil de pavo a la planxa i pa; tot agrupat en una bossa accessible.", tag: "apartament" },
     ],
     walk: "Arévalo: recorregut circular curt de 2–2,5 km. El castell es veu per fora; entrar només si sobra temps i energia.",
     parking: "Aparcar prop del castell d’Arévalo. Pressupost 0 €. Si hi ha més d’una hora de retard, mantindre només el pícnic.",
