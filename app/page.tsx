@@ -125,6 +125,21 @@ const foodStopsByTitle: Record<string, { reviews: string; alternativeId?: string
   "Honrubia · Moya": { reviews: maps("Hotel Restaurante Moya Honrubia ressenyes") },
 };
 
+type Forecast = { icon: string; temp: string; summary: string };
+
+// Previsió orientativa consultada el 9 d'agost de 2026. Es manté separada de
+// les decisions d'oratge del pla perquè siga molt fàcil actualitzar-la abans d'eixir.
+const forecastByDay: Record<number, Forecast> = {
+  1: { icon: "🌦️", temp: "24° / 18°", summary: "Pluja i possible tronada a l'arribada" },
+  2: { icon: "🌦️", temp: "24° / 18°", summary: "Ruixats de matí i clarianes després" },
+  3: { icon: "☀️", temp: "25° / 19°", summary: "Majoritàriament assolellat i humit" },
+  4: { icon: "⛅", temp: "25° / 17°", summary: "Sol i núvols, ambient humit" },
+  5: { icon: "⛈️", temp: "25° / 18°", summary: "Possible tronada matinal i cel cobert" },
+  6: { icon: "🌧️", temp: "24° / 18°", summary: "Núvols i pluja ocasional" },
+  7: { icon: "⛅", temp: "23° / 13°", summary: "Intervals de núvols i sol" },
+  8: { icon: "🌦️", temp: "30° / 18°", summary: "Calor al centre i possible ruixat de vesprada" },
+};
+
 type VisitDetails = {
   description: string;
   image: string;
@@ -132,57 +147,101 @@ type VisitDetails = {
   source: string;
 };
 
-const commonsImage = (filename: string) => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=1200`;
 const commonsSource = (filename: string) => `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(filename)}`;
+const placeImage = (filename: string) => `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/places/${filename}`;
 
 const visitDetailsByTitle: Record<string, VisitDetails> = {
   "Passeig mudèjar": {
     description: "La Plaça de la Villa concentra l’essència mudèjar d’Arévalo: porxos, façanes de rajola i les esglésies de Santa María i San Martín. És un passeig curt i molt visual per a estirar les cames sense convertir la parada en una visita llarga.",
-    image: commonsImage("Arévalo-Plaza de la Villa -Santa María la Mayor.JPG"), imageAlt: "Plaça de la Villa d’Arévalo", source: commonsSource("Arévalo-Plaza de la Villa -Santa María la Mayor.JPG"),
+    image: placeImage("arevalo.jpg"), imageAlt: "Plaça de la Villa d’Arévalo", source: commonsSource("Arévalo-Plaza de la Villa-y San Martín.JPG"),
   },
   "Centro Niemeyer": {
     description: "El conjunt d’Óscar Niemeyer és la imatge contemporània d’Avilés. La plaça exterior permet vore la cúpula, la torre i l’auditori sense necessitat de comprar entrada; la passarel·la sobre la ria completa les millors perspectives.",
-    image: commonsImage("Centro cultural Niemeyer - Ría de Avilés.jpg"), imageAlt: "Centre Niemeyer al costat de la ria d’Avilés", source: commonsSource("Centro cultural Niemeyer - Ría de Avilés.jpg"),
+    image: placeImage("niemeyer.jpg"), imageAlt: "Centre Niemeyer al costat de la ria d’Avilés", source: commonsSource("Aviles - Centro Cultural Internacional Oscar Niemeyer 21.jpg"),
   },
   "Cudillero · passeig curt": {
     description: "Cudillero forma un amfiteatre de cases de colors al voltant del port. La ruta proposada passa per la plaça de la Marina i dos miradors pròxims, evitant les escales més llargues si Cesc ja està cansat.",
-    image: commonsImage("Cudillero Asturias.jpg"), imageAlt: "Cases de colors de Cudillero", source: commonsSource("Cudillero Asturias.jpg"),
+    image: placeImage("cudillero.jpg"), imageAlt: "Cases de colors de Cudillero", source: commonsSource("Cudillero Asturias.jpg"),
   },
   "Cap Vidio": {
     description: "Un dels grans balcons de la costa occidental, amb penya-segats que superen els huitanta metres. El far i les vistes són accessibles amb un passeig curt, però cal mantindre Cesc sempre agafat i no acostar-se a la vora.",
-    image: commonsImage("Cabo Vidio 2.jpg"), imageAlt: "Penya-segats del cap Vidio", source: commonsSource("Cabo Vidio 2.jpg"),
+    image: placeImage("cabo-vidio.jpg"), imageAlt: "Penya-segats i far del cap Vidio", source: commonsSource("Cabo y faro de Vidío.jpg"),
   },
   "Platja de San Pedro": {
     description: "Platja ampla amb zona recreativa i serveis, pensada com la parada tranquil·la del dia. És adequada per al pícnic i el descans; el bany dependrà sempre de la bandera i de les indicacions de salvament.",
-    image: commonsImage("Playa de San Pedro de La Ribera.JPG"), imageAlt: "Platja de San Pedro de la Ribera", source: commonsSource("Playa de San Pedro de La Ribera.JPG"),
+    image: placeImage("san-pedro.jpg"), imageAlt: "Platja de San Pedro de la Ribera", source: commonsSource("Playa de San Pedro de La Ribera.JPG"),
   },
   "MUJA": {
     description: "El Museu del Juràssic d’Astúries té forma de gran petjada tridàctila. Dins recorre el Triàsic, Juràssic i Cretaci; fora, els xiquets trobaran reproduccions de dinosaures a escala real amb vista a la costa.",
-    image: "https://www.museojurasicoasturias.com/documents/3175063/0/MUJA.jpg/3ef2b678-0ced-5c39-3c3c-24113ad1fccf?t=1756449929281", imageAlt: "Entrada del Museu del Juràssic d’Astúries", source: "https://www.museojurasicoasturias.com/",
+    image: placeImage("muja.jpg"), imageAlt: "Entrada del Museu del Juràssic d’Astúries", source: commonsSource("Museo del Jurásico de Asturias.jpg"),
   },
   "Llastres · passeig": {
     description: "Llastres baixa en costera cap al port entre carrerons i cases marineres. El mirador de San Roque dona la vista panoràmica més completa; després convé baixar només el necessari per arribar al dinar sense presses.",
-    image: commonsImage("Lastres of Asturias, Spain at daybreak.jpg"), imageAlt: "Vista de Llastres des del mirador de San Roque", source: commonsSource("Lastres of Asturias, Spain at daybreak.jpg"),
+    image: placeImage("lastres.jpg"), imageAlt: "Vista de Llastres des del mirador de San Roque", source: commonsSource("Lastres of Asturias, Spain at daybreak.jpg"),
   },
   "Tazones": {
     description: "Xicotet port mariner lligat a l’arribada de Carles V a Espanya. El més agradable és passejar pels barris de San Miguel i San Roque, buscar la Casa de les Conquilles i acabar al moll.",
-    image: commonsImage("Tazones Asturias.jpg"), imageAlt: "Poble mariner de Tazones", source: commonsSource("Tazones Asturias.jpg"),
+    image: placeImage("tazones.jpg"), imageAlt: "Poble mariner de Tazones", source: commonsSource("Tazones Asturias.jpg"),
   },
   "Ruta curta familiar": {
     description: "La ruta uneix els llacs Ercina i Enol amb miradors, antigues mines i prats de muntanya. Són uns tres quilòmetres, però convé reservar temps per a parar, fer fotos i caminar al ritme de Cesc.",
-    image: commonsImage("Vistas lagos de covadonga 04.jpg"), imageAlt: "Llac Ercina als Lagos de Covadonga", source: commonsSource("Vistas lagos de covadonga 04.jpg"),
+    image: placeImage("lagos.jpg"), imageAlt: "Llacs de Covadonga i muntanyes", source: commonsSource("Lagos de Covadonga.jpg"),
   },
   "Cuevas del Mar": {
     description: "La platja destaca pels grans arcs de roca calcària modelats per la mar. Amb marea baixa es veuen millor les formes, però les roques poden relliscar: Cesc ha d’anar sempre acompanyat.",
-    image: commonsImage("Playa cuevas del mar 3.jpg"), imageAlt: "Arcs de roca a la platja de Cuevas del Mar", source: commonsSource("Playa cuevas del mar 3.jpg"),
+    image: placeImage("cuevas-del-mar.jpg"), imageAlt: "Arcs de roca a la platja de Cuevas del Mar", source: commonsSource("Playa cuevas del mar 3.jpg"),
   },
   "Llanes": {
     description: "El passeig concentra la muralla, el nucli històric, el port i els Cubos de la Memoria. El tram des del Sablón fins al port és curt i deixa el restaurant a mà per acabar el dia sense tornar a moure el cotxe.",
-    image: commonsImage("Llanes - Puerto 1.jpg"), imageAlt: "Port de Llanes", source: commonsSource("Llanes - Puerto 1.jpg"),
+    image: placeImage("llanes.jpg"), imageAlt: "Port de Llanes", source: commonsSource("Llanes - Puerto 1.jpg"),
   },
   "Santa María + San Miguel": {
     description: "Santa María del Naranco i San Miguel de Lillo són les peces més representatives del preromànic asturià. Estan molt pròximes entre si i la visita guiada ajuda a entendre per què són Patrimoni Mundial.",
-    image: commonsImage("Santa María del Naranco, Oviedo.jpg"), imageAlt: "Santa María del Naranco a Oviedo", source: commonsSource("Santa María del Naranco, Oviedo.jpg"),
+    image: placeImage("naranco.jpg"), imageAlt: "Santa María del Naranco a Oviedo", source: commonsSource("Santa María del Naranco, Oviedo.jpg"),
+  },
+  "Avilés històric · 2,5–3 km": {
+    description: "El centre històric d’Avilés és còmode per a recórrer en família. Els carrers porticats de Galiana i Rivero, la plaça d’Espanya i el parc de Ferrera formen una ruta pràcticament plana, amb moltes opcions per a parar.",
+    image: placeImage("aviles.jpg"), imageAlt: "Porxos del carrer Galiana d’Avilés", source: commonsSource("Calle Galiana Avilés 01.JPG"),
+  },
+  "Salinas + Museu de les Àncores": {
+    description: "La platja de Salinas té un passeig marítim llarg i obert. Des de la Peñona, el Museu de les Àncores mostra peces navals a l’aire lliure i ofereix una bona panoràmica del litoral sense pagar entrada.",
+    image: placeImage("salinas.jpg"), imageAlt: "Museu de les Àncores i platja de Salinas", source: commonsSource("Museo de Anclas, Salinas, Castrillón.jpg"),
+  },
+  "Platja del Silenci · opcional": {
+    description: "Una cala en forma de petxina protegida per penya-segats. En este itinerari es proposa únicament el mirador superior: la baixada és pronunciada i no compensa fer-la al final d’una jornada llarga amb Cesc.",
+    image: placeImage("silencio.jpg"), imageAlt: "Vista superior de la Platja del Silenci", source: commonsSource("Beach playa de silencio.jpg"),
+  },
+  "Jardí exterior": {
+    description: "Els jardins del MUJA són una extensió molt atractiva del museu: reproduccions de dinosaures a escala real, espai per a caminar i vista oberta cap a la costa. És una parada ideal per a les fotos dels xiquets.",
+    image: placeImage("muja.jpg"), imageAlt: "Edifici del MUJA envoltat de zona verda", source: commonsSource("Museo del Jurásico de Asturias.jpg"),
+  },
+  "Buferrera": {
+    description: "L’antiga zona minera de Buferrera conserva túnels, vagonetes i trinxeres integrades en el paisatge dels Picos de Europa. És l’inici més interessant de la ruta familiar cap als llacs.",
+    image: placeImage("buferrera.jpg"), imageAlt: "Antigues mines de Buferrera als Lagos de Covadonga", source: commonsSource("Minas de Buferrera (Lagos de Covadonga, Picos de Europa, Asturias, España) 01.JPG"),
+  },
+  "Covadonga": {
+    description: "El santuari combina la basílica, la Santa Cova i la cascada en un espai compacte però amb desnivells. Amb una hora ben organitzada es poden vore els punts principals sense presses abans de tornar a Cangas.",
+    image: placeImage("covadonga.jpg"), imageAlt: "Basílica de Covadonga", source: commonsSource("Covadonga, basilica 01.jpg"),
+  },
+  "Cangas de Onís": {
+    description: "El pont medieval, conegut popularment com a pont romà, és la imatge més característica de Cangas de Onís. Des d’allí el passeig fins al centre i les botigues és curt i senzill.",
+    image: placeImage("cangas.jpg"), imageAlt: "Pont de Cangas de Onís sobre el riu Sella", source: commonsSource("Roman bridge - Cangas de Onís, Spain - July 23, 2024 01.jpg"),
+  },
+  "Ribadesella · 2,5–3 km": {
+    description: "La ruta familiar uneix el passeig de la Grua, el port i el centre amb vistes a la desembocadura del Sella. Si hi ha energia, es pot allargar cap al passeig de Santa Marina; si no, el tram urbà ja és complet.",
+    image: placeImage("ribadesella.jpg"), imageAlt: "Ribadesella i la desembocadura del Sella", source: commonsSource("Ribadesella (Asturias) 01.jpg"),
+  },
+  "Centre històric": {
+    description: "El cor d’Oviedo concentra la catedral, la plaça d’Alfons II, el mercat del Fontán i carrers per als vianants. És una ruta fàcil d’escurçar o ampliar segons l’oratge i el cansament.",
+    image: placeImage("oviedo.jpg"), imageAlt: "Catedral de San Salvador d’Oviedo", source: commonsSource("Catedral de Oviedo 07.jpg"),
+  },
+  "Oviedo a peu": {
+    description: "Després de dinar, el millor és un passeig lliure pel Fontán, l’Ajuntament i les escultures del centre. Tot queda pròxim i permet acabar la jornada amb gelat o café sense tornar al cotxe.",
+    image: placeImage("oviedo.jpg"), imageAlt: "Catedral i centre històric d’Oviedo", source: commonsSource("Catedral de Oviedo 07.jpg"),
+  },
+  "Medina del Campo / Rueda": {
+    description: "La parada de tornada permet dinar i estirar les cames en una zona amb serveis. Si aneu bé de temps, l’exterior del castell de la Mota és una visita curta i vistosa abans de continuar cap a Madrid.",
+    image: placeImage("medina.jpg"), imageAlt: "Castell de la Mota a Medina del Campo", source: commonsSource("Castillo de La Mota, en Medina del Campo (6972495918).jpg"),
   },
 };
 
@@ -443,7 +502,7 @@ export default function Home() {
 
       <section className="section route-section" id="ruta">
         <div className="section-heading"><div><p className="kicker">LA RUTA D’UN PRIMER COLP D’ULL</p><h2>Un viatge, huit jornades.</h2></div><p>Prem qualsevol dia per obrir el pla complet, els llocs exactes, la preparació i les alternatives.</p></div>
-        <div className="route-rail">{days.map((day) => <button key={day.id} onClick={() => chooseDay(day.id)} className={activeDay === day.id ? "active" : ""}><span>{day.id}</span><small>{day.shortDate}</small><strong>{day.title.split("+")[0]}</strong></button>)}</div>
+        <div className="route-rail">{days.map((day) => <button key={day.id} onClick={() => chooseDay(day.id)} className={activeDay === day.id ? "active" : ""}><span>{day.id}<em title={forecastByDay[day.id].summary}>{forecastByDay[day.id].icon}</em></span><small>{day.shortDate}</small><strong>{day.title.split("+")[0]}</strong></button>)}</div>
       </section>
 
       <section className="section planner" id="planner">
@@ -453,12 +512,13 @@ export default function Home() {
 
         {tab === "itinerari" && <div className="tab-panel">
           <div className="filter-row"><div><p className="kicker">ITINERARI DETALLAT</p><h2>Tria la jornada</h2></div><div className="filters">{[['tots','Tots'],['costa','Costa'],['natura','Natura'],['ciutat','Ciutat'],['ruta','Carretera']].map(([key,label]) => <button key={key} onClick={() => setFilter(key)} className={filter === key ? "active" : ""}>{label}</button>)}</div></div>
-          <div className="day-grid">{filteredDays.map((day) => <button key={day.id} className={`day-card ${day.color} ${activeDay === day.id ? "selected" : ""}`} onClick={() => chooseDay(day.id)}><div className="day-card-top"><span>DIA {day.id}</span><i>{day.icon}</i></div><small>{day.date}</small><h3>{day.title}</h3><p>{day.subtitle}</p><div className="day-stats"><span>{day.distance}</span><span>{day.budget}</span></div></button>)}</div>
+          <div className="forecast-notice"><span>◷</span><p><strong>Previsió orientativa consultada el 9 d’agost.</strong> La tornarem a actualitzar el dia abans d’eixir.</p></div>
+          <div className="day-grid">{filteredDays.map((day) => { const forecast = forecastByDay[day.id]; return <button key={day.id} className={`day-card ${day.color} ${activeDay === day.id ? "selected" : ""}`} onClick={() => chooseDay(day.id)}><div className="day-card-top"><span>DIA {day.id}</span><span className="weather-pill" title={forecast.summary}><b>{forecast.icon}</b><small>{forecast.temp}</small></span></div><small>{day.date}</small><h3>{day.title}</h3><p>{day.subtitle}</p><div className="day-weather-copy">{forecast.summary}</div><div className="day-stats"><span>{day.distance}</span><span>{day.budget}</span></div></button>; })}</div>
 
           <article className={`day-detail ${selected.color}`} id={`itinerari-dia-${selected.id}`}>
-            <div className="detail-head"><div className="detail-number">{String(selected.id).padStart(2,"0")}</div><div><p>{selected.date}</p><h2>{selected.title}</h2><span>{selected.subtitle}</span></div><a href={selected.map} target="_blank" rel="noreferrer" className="map-button">Ruta completa en Maps ↗</a></div>
+            <div className="detail-head"><div className="detail-number">{String(selected.id).padStart(2,"0")}</div><div><p>{selected.date}</p><h2>{selected.title}</h2><span>{selected.subtitle}</span></div><div className="detail-weather" title={forecastByDay[selected.id].summary}><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ 09/08</small><strong>{forecastByDay[selected.id].temp}</strong></div></div><a href={selected.map} target="_blank" rel="noreferrer" className="map-button">Ruta completa en Maps ↗</a></div>
             <div className="detail-facts"><div><small>DISTÀNCIA</small><strong>{selected.distance}</strong></div><div><small>CONDUCCIÓ</small><strong>{selected.driving}</strong></div><div><small>PRESSUPOST</small><strong>{selected.budget}</strong></div></div>
-            <div className="day-brief"><div><small>OBJECTIU REAL DEL DIA</small><p>{selected.objective}</p></div><div className="weather-brief"><small>DECISIÓ D’ORATGE</small><p>{selected.weather}</p></div></div>
+            <div className="day-brief"><div><small>OBJECTIU REAL DEL DIA</small><p>{selected.objective}</p></div><div className="weather-brief"><div className="weather-current"><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ ACTUAL · 09/08</small><strong>{forecastByDay[selected.id].temp}</strong><p>{forecastByDay[selected.id].summary}</p></div></div><p className="weather-advice"><b>Decisió del dia:</b> {selected.weather}</p></div></div>
             <div className="detail-columns">
               <div className="timeline"><h3>Horari pas a pas</h3>{selected.schedule.map((item, index) => {
                 const visit = visitDetailsByTitle[item.title];
@@ -466,7 +526,7 @@ export default function Home() {
                 const alternative = foodStop?.alternativeId ? restaurantAlternatives[foodStop.alternativeId] : undefined;
                 return <div className="timeline-item" key={`${selected.id}-${index}`}><time>{item.time}</time><span className="timeline-dot"/><div className="timeline-copy"><div><strong>{item.title}</strong>{item.tag && <em>{item.tag}</em>}</div><p>{item.note}</p><div className="timeline-links">{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir ubicació ↗</a>}{foodStop && <a className="review-action" href={foodStop.reviews} target="_blank" rel="noreferrer">★ Ressenyes Google ↗</a>}</div>
                   {alternative && <div className="timeline-alternative"><span>Alternativa si està complet</span><strong>{alternative.name}</strong><small>{alternative.detail}</small><div>{alternative.phone && <a href={`tel:${alternative.phone}`}>☎ {alternative.phoneLabel}</a>}<a href={alternative.map} target="_blank" rel="noreferrer">Maps ↗</a><a href={alternative.reviews} target="_blank" rel="noreferrer">Ressenyes ↗</a></div></div>}
-                  {visit && <details className="visit-details"><summary><span className="plus-icon">+</span><span>Veure descripció i foto</span></summary><div className="visit-card"><img src={visit.image} alt={visit.imageAlt} loading="lazy"/><div><p>{visit.description}</p><div><a href={item.map} target="_blank" rel="noreferrer">Obrir en Maps ↗</a><a href={visit.source} target="_blank" rel="noreferrer">Font de la foto ↗</a></div></div></div></details>}
+                  {visit && <details className="visit-details"><summary><span className="plus-icon">+</span><span>Veure descripció i foto</span></summary><div className="visit-card"><div className="visit-media"><img src={visit.image} alt={visit.imageAlt} loading="lazy" onError={(event) => { event.currentTarget.hidden = true; event.currentTarget.parentElement?.classList.add("image-missing"); }}/><span>📍 Fotografia temporalment no disponible</span></div><div><p>{visit.description}</p><div>{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir en Maps ↗</a>}<a href={visit.source} target="_blank" rel="noreferrer">Font de la foto ↗</a></div></div></div></details>}
                 </div></div>;
               })}</div>
               <aside className="day-aside">

@@ -346,3 +346,40 @@
   .visit-card>div>p{font-size:14px;line-height:1.65}
   .visit-card a{font-size:11px;padding:9px 10px}
 }
+
+/* Previsió visual i galeria local de llocs */
+.route-rail span em{font-family:system-ui,sans-serif;font-style:normal;font-size:16px;margin-left:7px;vertical-align:2px}
+.weather-pill{display:flex!important;align-items:center;gap:6px;min-height:34px;padding:4px 8px;border-radius:20px;background:#eef4ef;letter-spacing:0!important}
+.weather-pill b{font-size:18px;line-height:1}
+.weather-pill small{font-size:9px;color:var(--deep);font-weight:900;letter-spacing:0;white-space:nowrap}
+.day-weather-copy{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);color:#3f5951;font-size:10px;font-weight:700;line-height:1.35}
+.forecast-notice{display:flex;align-items:center;gap:12px;margin:25px 0 -16px;padding:13px 16px;border:1px solid #efd4ac;border-radius:6px;background:#fff6e8;color:#69583f}
+.forecast-notice>span{width:31px;height:31px;flex:0 0 31px;display:grid;place-items:center;border-radius:50%;background:#f3d9aa;font-size:16px}
+.forecast-notice p{margin:0;font-size:11px;line-height:1.5}
+.detail-weather{margin-left:auto;display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.22);border-radius:6px;background:rgba(255,255,255,.07);white-space:nowrap}
+.detail-weather>span{font-size:27px!important;line-height:1;margin:0!important;color:inherit!important}
+.detail-weather>div{display:flex;flex-direction:column;gap:2px}
+.detail-weather small{font-size:7px;letter-spacing:.12em;color:#cfe0db;font-weight:900}
+.detail-weather strong{font-family:Georgia,serif;font-size:17px;font-weight:400;color:white}
+.detail-head>.map-button{margin-left:0}
+.weather-current{display:flex;align-items:center;gap:13px}
+.weather-current>span{font-size:31px;line-height:1}
+.weather-current>div{min-width:0}
+.weather-current strong{display:block;margin-top:5px;font-family:Georgia,serif;font-size:22px;font-weight:400;color:var(--deep)}
+.weather-current p{margin-top:3px}
+.weather-advice{padding-top:12px;border-top:1px solid #ead6b5}
+.visit-media{position:relative;display:grid;place-items:center;width:100%;height:220px;background:linear-gradient(135deg,#dfe7e2,#edf2e7);overflow:hidden}
+.visit-media>img{display:block;width:100%;height:100%;object-fit:cover}
+.visit-media>span{display:none;padding:20px;color:#4b625b;font-size:12px;font-weight:800;text-align:center}
+.visit-media.image-missing>span{display:block}
+
+@media(max-width:600px){
+  .forecast-notice{margin:20px 0 -10px;padding:12px}
+  .forecast-notice p{font-size:13px}
+  .weather-pill{padding:4px 7px}
+  .weather-pill small{font-size:10px}
+  .day-weather-copy{font-size:12px}
+  .detail-weather{grid-column:1/-1;margin:2px 0 0;justify-content:center}
+  .detail-head>.map-button{grid-column:1/-1}
+  .visit-media{height:190px}
+}
