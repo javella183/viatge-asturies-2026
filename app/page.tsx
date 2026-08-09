@@ -2,6 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { contacts, days, maps, shops, tasks, type Contact } from "./trip-data";
+import {
+  blobToDataUrl,
+  clearPhotoMemories,
+  compressPhoto,
+  dataUrlToBlob,
+  deletePhotoMemory,
+  getAllPhotoMemories,
+  putPhotoMemory,
+  type StoredPhotoMemory,
+} from "./photo-memory";
 
 type TabKey = "itinerari" | "compres" | "maleta" | "reserves" | "control";
 type CheckedState = Record<string, boolean>;
@@ -18,6 +28,8 @@ type Expense = {
 
 type CustomTask = { id: string; label: string; group: string };
 type ShoppingItem = { id: string; label: string; quantity: string; group: string; checked: boolean };
+type PhotoMemory = StoredPhotoMemory & { url: string };
+type PhotoMission = { people: string; prompt: string };
 
 const STORAGE = {
   checked: "asturies-checklist-v2",
@@ -149,6 +161,7 @@ type VisitDetails = {
 
 const commonsSource = (filename: string) => `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(filename)}`;
 const placeImage = (filename: string) => `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/places/${filename}`;
+const familyCutout = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/family/familia-avella-ferrer.png`;
 
 const visitDetailsByTitle: Record<string, VisitDetails> = {
   "Passeig mudèjar": {
@@ -245,6 +258,32 @@ const visitDetailsByTitle: Record<string, VisitDetails> = {
   },
 };
 
+const photoMissionByTitle: Record<string, PhotoMission> = {
+  "Passeig mudèjar": { people: "Tota la família", prompt: "Una primera foto de viatge entre els porxos de la plaça de la Villa." },
+  "Centro Niemeyer": { people: "Josep i Caty", prompt: "Una foto de parella amb les formes blanques del Niemeyer al fons." },
+  "Avilés històric · 2,5–3 km": { people: "Cesc", prompt: "Cesc baix dels porxos de Galiana, com si explorara la ciutat." },
+  "Salinas + Museu de les Àncores": { people: "Cesc i Lluís", prompt: "Els germans junts amb la mar o una àncora al fons." },
+  "Cudillero · passeig curt": { people: "Tota la família", prompt: "La foto familiar imprescindible amb l’amfiteatre de cases de colors." },
+  "Cap Vidio": { people: "Josep i Caty", prompt: "Una foto de parella amb el far, mantenint una distància segura del penya-segat." },
+  "Platja de San Pedro": { people: "Cesc i Lluís", prompt: "Una foto espontània dels dos germans jugant a la platja." },
+  "Platja del Silenci · opcional": { people: "Lluís", prompt: "Lluís davant de la panoràmica de la cala des del mirador." },
+  "MUJA": { people: "Cesc", prompt: "Cesc davant de l’edifici amb forma de petjada de dinosaure." },
+  "Jardí exterior": { people: "Cesc i Lluís", prompt: "Els dos germans imitant el dinosaure més gran que trobeu." },
+  "Llastres · passeig": { people: "Tota la família", prompt: "Una foto familiar amb el poble i la costa des del mirador de San Roque." },
+  "Tazones": { people: "Cesc i Lluís", prompt: "Els germans al port o buscant la Casa de les Conquilles." },
+  "Buferrera": { people: "Lluís", prompt: "Lluís com a explorador entre el paisatge de l’antiga mina." },
+  "Ruta curta familiar": { people: "Tota la família", prompt: "La gran foto del viatge amb un dels llacs de Covadonga al fons." },
+  "Covadonga": { people: "Josep i Caty", prompt: "Una foto de parella davant de la basílica o la Santa Cova." },
+  "Cangas de Onís": { people: "Cesc i Lluís", prompt: "Els germans junts amb el pont i la creu al fons." },
+  "Cuevas del Mar": { people: "Cesc", prompt: "Cesc descobrint un dels arcs de roca, sempre en una zona segura." },
+  "Ribadesella · 2,5–3 km": { people: "Tota la família", prompt: "Una foto familiar al passeig amb la desembocadura del Sella." },
+  "Llanes": { people: "Josep i Caty", prompt: "Una foto de parella al port o davant dels Cubos de la Memoria." },
+  "Santa María + San Miguel": { people: "Tota la família", prompt: "Una foto familiar davant de Santa María del Naranco." },
+  "Centre històric": { people: "Lluís", prompt: "Lluís davant de la catedral o amb una de les escultures d’Oviedo." },
+  "Oviedo a peu": { people: "Cesc i Lluís", prompt: "Una foto divertida dels germans al Fontán o amb Mafalda." },
+  "Medina del Campo / Rueda": { people: "Tota la família", prompt: "L’última foto del viatge per acomiadar l’aventura abans de tornar a Xaló." },
+};
+
 const legacyTaskMap: Record<string, string[]> = {
   "0-0": ["casal-arribada"], "0-1": ["casal-cuina"], "0-2": ["tigu-revisio"], "0-3": ["v16-docs"], "0-4": ["rutes-offline"],
   "1-0": ["yumay"], "1-1": ["muja", "cafetin"], "1-2": ["lagos"], "1-3": ["puerto"], "1-4": ["piguena"],
@@ -287,6 +326,49 @@ function ContactCard({ contact, small = false }: { contact: Contact; small?: boo
   );
 }
 
+function PhotoMissionCard({
+  day,
+  placeTitle,
+  mission,
+  memory,
+  busy,
+  onPhoto,
+  onNote,
+  onDelete,
+}: {
+  day: number;
+  placeTitle: string;
+  mission: PhotoMission;
+  memory?: PhotoMemory;
+  busy: boolean;
+  onPhoto: (file: File) => void;
+  onNote: () => void;
+  onDelete: () => void;
+}) {
+  const inputId = `memory-${day}-${placeTitle.replace(/[^a-z0-9]/gi, "-")}`;
+  const selectPhoto = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) onPhoto(file);
+    event.target.value = "";
+  };
+  return (
+    <section className={`photo-mission ${memory ? "completed" : ""}`}>
+      <div className="photo-mission-head">
+        <span className="photo-mission-icon">{memory ? "✓" : "📷"}</span>
+        <div><small>{memory ? "RECORD GUARDAT" : "MISSIÓ FOTOGRÀFICA"}</small><strong>{mission.people}</strong><p>{mission.prompt}</p></div>
+      </div>
+      {memory && <figure className="memory-preview"><img src={memory.url} alt={`Record familiar a ${placeTitle}`} /><figcaption><b>{placeTitle}</b>{memory.note ? <span>{memory.note}</span> : <span>Sense nota encara</span>}</figcaption></figure>}
+      <div className="memory-actions">
+        <label className={`memory-primary ${busy ? "disabled" : ""}`} htmlFor={`${inputId}-camera`}>{busy ? "Preparant…" : memory ? "📷 Repetir foto" : "📷 Fer la foto"}</label>
+        <input id={`${inputId}-camera`} type="file" accept="image/*" capture="environment" onChange={selectPhoto} disabled={busy} hidden />
+        <label className="memory-secondary" htmlFor={`${inputId}-gallery`}>▧ {memory ? "Canviar des de galeria" : "Triar de la galeria"}</label>
+        <input id={`${inputId}-gallery`} type="file" accept="image/*" onChange={selectPhoto} disabled={busy} hidden />
+        {memory && <><button type="button" onClick={onNote}>✎ Nota</button><a href={memory.url} download={`asturies-dia-${day}-${placeTitle}.jpg`}>↓ Guardar</a><button type="button" className="memory-delete" onClick={onDelete}>× Eliminar</button></>}
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [activeDay, setActiveDay] = useState(1);
   const [filter, setFilter] = useState("tots");
@@ -300,10 +382,14 @@ export default function Home() {
   const [customTasks, setCustomTasks] = useState<CustomTask[]>([]);
   const [taskLabels, setTaskLabels] = useState<Record<string, string>>({});
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
+  const [photoMemories, setPhotoMemories] = useState<PhotoMemory[]>([]);
+  const [photoBusy, setPhotoBusy] = useState<string | null>(null);
+  const [photoStatus, setPhotoStatus] = useState("Carregant l’àlbum local…");
   const [expenseForm, setExpenseForm] = useState({ day: "1", concept: "", category: "Supermercat", amount: "", note: "" });
   const [newTask, setNewTask] = useState({ label: "", group: "dia" });
   const [newShopping, setNewShopping] = useState({ label: "", quantity: "", group: "Compra principal" });
   const restoreInput = useRef<HTMLInputElement>(null);
+  const photoMemoriesRef = useRef<PhotoMemory[]>([]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -325,11 +411,80 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    getAllPhotoMemories().then((stored) => {
+      if (!active) return;
+      const loaded = stored.map((memory) => ({ ...memory, url: URL.createObjectURL(memory.blob) }));
+      photoMemoriesRef.current = loaded;
+      setPhotoMemories(loaded);
+      setPhotoStatus(loaded.length ? `${loaded.length} records guardats en este dispositiu` : "Encara no hi ha fotos guardades");
+    }).catch(() => {
+      if (active) setPhotoStatus("Este navegador no permet obrir l’àlbum local.");
+    });
+    return () => {
+      active = false;
+      photoMemoriesRef.current.forEach((memory) => URL.revokeObjectURL(memory.url));
+    };
+  }, []);
+
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE.expenses, JSON.stringify(expenses)); }, [expenses, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE.budget, String(budgetTotal)); }, [budgetTotal, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE.customTasks, JSON.stringify(customTasks)); }, [customTasks, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE.taskLabels, JSON.stringify(taskLabels)); }, [taskLabels, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE.shopping, JSON.stringify(shoppingItems)); }, [shoppingItems, hydrated]);
+
+  const replacePhotoState = (stored: StoredPhotoMemory) => {
+    const nextMemory = { ...stored, url: URL.createObjectURL(stored.blob) };
+    setPhotoMemories((current) => {
+      const previous = current.find((memory) => memory.id === stored.id);
+      if (previous) URL.revokeObjectURL(previous.url);
+      const next = [nextMemory, ...current.filter((memory) => memory.id !== stored.id)];
+      photoMemoriesRef.current = next;
+      setPhotoStatus(`${next.length} records guardats en este dispositiu`);
+      return next;
+    });
+  };
+
+  const savePhoto = async (day: number, placeTitle: string, mission: PhotoMission, file: File) => {
+    const id = `day-${day}-${placeTitle}`;
+    setPhotoBusy(id);
+    try {
+      const previous = photoMemories.find((memory) => memory.id === id);
+      const blob = await compressPhoto(file);
+      const stored: StoredPhotoMemory = {
+        id, day, placeTitle, people: mission.people, prompt: mission.prompt,
+        note: previous?.note || "", createdAt: new Date().toISOString(), blob,
+      };
+      await putPhotoMemory(stored);
+      replacePhotoState(stored);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "No s’ha pogut guardar la fotografia.");
+    } finally {
+      setPhotoBusy(null);
+    }
+  };
+
+  const editPhotoNote = async (memory: PhotoMemory) => {
+    const note = window.prompt("Escriu una frase per recordar este moment", memory.note)?.trim();
+    if (note === undefined) return;
+    const { url: _url, ...storedMemory } = memory;
+    const stored: StoredPhotoMemory = { ...storedMemory, note };
+    await putPhotoMemory(stored);
+    replacePhotoState(stored);
+  };
+
+  const removePhoto = async (memory: PhotoMemory) => {
+    if (!window.confirm("Vols eliminar este record del dispositiu?")) return;
+    await deletePhotoMemory(memory.id);
+    setPhotoMemories((current) => {
+      URL.revokeObjectURL(memory.url);
+      const next = current.filter((item) => item.id !== memory.id);
+      photoMemoriesRef.current = next;
+      setPhotoStatus(next.length ? `${next.length} records guardats en este dispositiu` : "Encara no hi ha fotos guardades");
+      return next;
+    });
+  };
 
   const toggleTask = (id: string) => {
     setChecked((current) => {
@@ -415,6 +570,10 @@ export default function Home() {
   const expenseByCategory = categories.map((category) => ({ category, total: expenses.filter((expense) => expense.category === category).reduce((sum, expense) => sum + expense.amount, 0) })).filter((item) => item.total > 0);
   const expenseByDay = days.map((day) => ({ day, total: expenses.filter((expense) => expense.day === day.id).reduce((sum, expense) => sum + expense.amount, 0) }));
   const pendingShopping = shoppingItems.filter((item) => !item.checked).length;
+  const selectedMissionCount = selected.schedule.filter((item) => photoMissionByTitle[item.title]).length;
+  const selectedDayMemories = photoMemories.filter((memory) => memory.day === selected.id);
+  const totalMissionCount = days.reduce((total, day) => total + day.schedule.filter((item) => photoMissionByTitle[item.title]).length, 0);
+  const photoMegabytes = photoMemories.reduce((total, memory) => total + memory.blob.size, 0) / 1024 / 1024;
 
   const download = (filename: string, content: string, type: string) => {
     const url = URL.createObjectURL(new Blob([content], { type }));
@@ -425,7 +584,12 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
-  const backupData = () => download("asturies-2026-copia.json", JSON.stringify({ version: 1, savedAt: new Date().toISOString(), checked, expenses, budgetTotal, customTasks, taskLabels, shoppingItems }, null, 2), "application/json");
+  const backupData = async () => {
+    try {
+      const photos = await Promise.all(photoMemories.map(async ({ url: _url, blob, ...memory }) => ({ ...memory, dataUrl: await blobToDataUrl(blob) })));
+      download("asturies-2026-copia-amb-fotos.json", JSON.stringify({ version: 2, savedAt: new Date().toISOString(), checked, expenses, budgetTotal, customTasks, taskLabels, shoppingItems, photos }, null, 2), "application/json");
+    } catch { window.alert("No s’ha pogut preparar la còpia amb les fotografies."); }
+  };
 
   const exportCsv = () => {
     const escape = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
@@ -437,7 +601,7 @@ export default function Home() {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const data = JSON.parse(String(reader.result));
         if (!data || !Array.isArray(data.expenses) || !Array.isArray(data.shoppingItems)) throw new Error("invalid");
@@ -447,7 +611,25 @@ export default function Home() {
         setCustomTasks(Array.isArray(data.customTasks) ? data.customTasks : []);
         setTaskLabels(data.taskLabels || {});
         setShoppingItems(data.shoppingItems);
-        window.alert("Còpia restaurada correctament.");
+        if (Array.isArray(data.photos)) {
+          await clearPhotoMemories();
+          photoMemoriesRef.current.forEach((memory) => URL.revokeObjectURL(memory.url));
+          const restored: PhotoMemory[] = [];
+          for (const item of data.photos) {
+            if (!item?.id || !item?.dataUrl) continue;
+            const stored: StoredPhotoMemory = {
+              id: String(item.id), day: Number(item.day), placeTitle: String(item.placeTitle || "Record del viatge"),
+              people: String(item.people || "Família"), prompt: String(item.prompt || ""), note: String(item.note || ""),
+              createdAt: String(item.createdAt || new Date().toISOString()), blob: await dataUrlToBlob(String(item.dataUrl)),
+            };
+            await putPhotoMemory(stored);
+            restored.push({ ...stored, url: URL.createObjectURL(stored.blob) });
+          }
+          photoMemoriesRef.current = restored;
+          setPhotoMemories(restored);
+          setPhotoStatus(restored.length ? `${restored.length} records restaurats` : "Encara no hi ha fotos guardades");
+        }
+        window.alert("Còpia restaurada correctament, incloses les fotografies disponibles.");
       } catch { window.alert("No s’ha pogut restaurar: el fitxer no és una còpia vàlida."); }
       event.target.value = "";
     };
@@ -470,7 +652,7 @@ export default function Home() {
   return (
     <main>
       <header className="topbar">
-        <a className="brand" href="#inici" aria-label="Inici"><span className="brand-mark">A</span><span>ASTÚRIES <b>2026</b></span></a>
+        <a className="brand" href="#inici" aria-label="Inici"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></a>
         <nav className={menuOpen ? "main-nav open" : "main-nav"}>
           <button onClick={() => jump("itinerari")}>Itinerari</button><button onClick={() => jump("compres")}>Compres</button><button onClick={() => jump("maleta")}>Llistes</button><button onClick={() => jump("reserves")}>Reserves</button><button onClick={() => jump("control")}>Control</button>
         </nav>
@@ -480,17 +662,25 @@ export default function Home() {
       <section className="hero" id="inici">
         <div className="hero-glow glow-one"/><div className="hero-glow glow-two"/><div className="mountain mountain-a"/><div className="mountain mountain-b"/>
         <div className="hero-content">
-          <p className="eyebrow">GUIA OPERATIVA · FAMÍLIA AVELLÀ</p>
-          <h1>Huit dies per a<br/><em>viure Astúries.</em></h1>
+          <p className="eyebrow">EL NOSTRE VIATGE FAMILIAR</p>
+          <h1 className="family-title"><span>Els</span><em>Avellà-Ferrer</em><span>en Astúries</span></h1>
+          <p className="hero-season">(estiu 2026)</p>
           <p className="hero-lead">Tot el viatge al mòbil: horaris, rutes, restaurants, compres, llistes i despeses guardades automàticament en este dispositiu.</p>
           <div className="hero-actions"><button className="primary" onClick={() => jump("itinerari")}>Començar la guia <span>↓</span></button><button className="secondary" onClick={() => jump("reserves")}>{reservationRows.length - completedReservations} reserves pendents ↗</button></div>
         </div>
-        <aside className="trip-card">
-          <div className="trip-card-top"><span>COMENÇA EL</span><b>16·08</b></div>
-          <div className="trip-route"><span className="route-dot start"/><div><small>EIXIDA · 16 AGO</small><strong>Xaló</strong></div></div><div className="route-line"><span>930 km</span></div><div className="trip-route"><span className="route-dot end"/><div><small>BASE · 7 NITS</small><strong>La Callezuela</strong></div></div>
-          <div className="trip-progress"><div><span>Preparació</span><b>{completedTasks}/{allTaskCount}</b></div><i><em style={{ width: `${Math.round((completedTasks / Math.max(1, allTaskCount)) * 100)}%` }}/></i></div>
-          <div className="trip-meta"><div><span>8</span><small>DIES</small></div><div><span>4</span><small>VIATGERS</small></div><div><span>7,3</span><small>L/100 KM</small></div></div>
-        </aside>
+        <div className="hero-visual">
+          <div className="hero-family">
+            <span className="family-monogram" aria-hidden="true">AF</span>
+            <img className="family-portrait" src={familyCutout} alt="Josep, Caty, Lluís i Cesc, la família Avellà-Ferrer"/>
+            <div className="family-nameplate"><b>La nostra aventura</b><span>Josep · Caty · Lluís · Cesc</span></div>
+          </div>
+          <aside className="trip-card">
+            <div className="trip-card-top"><span>COMENÇA EL</span><b>16·08</b></div>
+            <div className="trip-route"><span className="route-dot start"/><div><small>EIXIDA · 16 AGO</small><strong>Xaló</strong></div></div><div className="route-line"><span>930 km</span></div><div className="trip-route"><span className="route-dot end"/><div><small>BASE · 7 NITS</small><strong>La Callezuela</strong></div></div>
+            <div className="trip-progress"><div><span>Preparació</span><b>{completedTasks}/{allTaskCount}</b></div><i><em style={{ width: `${Math.round((completedTasks / Math.max(1, allTaskCount)) * 100)}%` }}/></i></div>
+            <div className="trip-meta"><div><span>8</span><small>DIES</small></div><div><span>4</span><small>VIATGERS</small></div><div><span>7,3</span><small>L/100 KM</small></div></div>
+          </aside>
+        </div>
       </section>
 
       <section className="quick-strip">
@@ -524,9 +714,12 @@ export default function Home() {
                 const visit = visitDetailsByTitle[item.title];
                 const foodStop = foodStopsByTitle[item.title];
                 const alternative = foodStop?.alternativeId ? restaurantAlternatives[foodStop.alternativeId] : undefined;
+                const photoMission = photoMissionByTitle[item.title];
+                const photoMemory = photoMemories.find((memory) => memory.id === `day-${selected.id}-${item.title}`);
                 return <div className="timeline-item" key={`${selected.id}-${index}`}><time>{item.time}</time><span className="timeline-dot"/><div className="timeline-copy"><div><strong>{item.title}</strong>{item.tag && <em>{item.tag}</em>}</div><p>{item.note}</p><div className="timeline-links">{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir ubicació ↗</a>}{foodStop && <a className="review-action" href={foodStop.reviews} target="_blank" rel="noreferrer">★ Ressenyes Google ↗</a>}</div>
                   {alternative && <div className="timeline-alternative"><span>Alternativa si està complet</span><strong>{alternative.name}</strong><small>{alternative.detail}</small><div>{alternative.phone && <a href={`tel:${alternative.phone}`}>☎ {alternative.phoneLabel}</a>}<a href={alternative.map} target="_blank" rel="noreferrer">Maps ↗</a><a href={alternative.reviews} target="_blank" rel="noreferrer">Ressenyes ↗</a></div></div>}
                   {visit && <details className="visit-details"><summary><span className="plus-icon">+</span><span>Veure descripció i foto</span></summary><div className="visit-card"><div className="visit-media"><img src={visit.image} alt={visit.imageAlt} loading="lazy" onError={(event) => { event.currentTarget.hidden = true; event.currentTarget.parentElement?.classList.add("image-missing"); }}/><span>📍 Fotografia temporalment no disponible</span></div><div><p>{visit.description}</p><div>{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir en Maps ↗</a>}<a href={visit.source} target="_blank" rel="noreferrer">Font de la foto ↗</a></div></div></div></details>}
+                  {photoMission && <PhotoMissionCard day={selected.id} placeTitle={item.title} mission={photoMission} memory={photoMemory} busy={photoBusy === `day-${selected.id}-${item.title}`} onPhoto={(file) => savePhoto(selected.id, item.title, photoMission, file)} onNote={() => photoMemory && editPhotoNote(photoMemory)} onDelete={() => photoMemory && removePhoto(photoMemory)} />}
                 </div></div>;
               })}</div>
               <aside className="day-aside">
@@ -538,6 +731,11 @@ export default function Home() {
                 <div className="resource-row">{selected.links.map((link) => <a key={link.label} href={link.href} target="_blank" rel="noreferrer">{link.label} ↗</a>)}</div>
               </aside>
             </div>
+            <section className="day-album">
+              <div className="album-heading"><div><p className="kicker">ÀLBUM FAMILIAR DEL DIA</p><h3>Records que no volem oblidar</h3><p>{photoStatus}. Les fotos només es guarden en este navegador.</p></div><span><b>{selectedDayMemories.length}</b> / {selectedMissionCount}</span></div>
+              <div className="album-progress"><i><em style={{ width: `${selectedMissionCount ? Math.min(100, Math.round((selectedDayMemories.length / selectedMissionCount) * 100)) : 0}%` }}/></i><small>{selectedDayMemories.length === selectedMissionCount && selectedMissionCount > 0 ? "Missions del dia completades ✓" : `${Math.max(0, selectedMissionCount - selectedDayMemories.length)} fotos pendents`}</small></div>
+              {selectedDayMemories.length > 0 ? <div className="day-gallery">{selectedDayMemories.map((memory) => <figure key={memory.id}><img src={memory.url} alt={`Record de ${memory.people} a ${memory.placeTitle}`} loading="lazy"/><figcaption><b>{memory.people}</b><span>{memory.placeTitle}</span>{memory.note && <small>{memory.note}</small>}</figcaption></figure>)}</div> : <div className="album-empty"><span>📷</span><p>Quan completeu la primera missió fotogràfica del dia, el record apareixerà ací.</p></div>}
+            </section>
             <section className="day-actions"><div className="subheading"><div><p className="kicker">PREPARACIÓ GUARDADA</p><h3>Marca ací o en «Llistes»</h3></div><span>{selected.taskIds.filter((id) => checked[id]).length}/{selected.taskIds.length}</span></div><div className="inline-checks">{selected.taskIds.map((id) => <TaskCheck key={id} id={id} label={taskLabels[id]} checked={!!checked[id]} onToggle={toggleTask} compact/>)}</div></section>
             {selected.contactIds.length > 0 && <section className="day-contacts"><p className="kicker">TELÈFONS I ENLLAÇOS DEL DIA</p><div className="places-grid">{selected.contactIds.map((id) => <ContactCard key={id} contact={contactById[id]} small/>)}</div></section>}
             <div className="day-switch"><button disabled={selected.id === 1} onClick={() => chooseDay(selected.id - 1)}>← Dia anterior</button><span>{selected.id} / 8</span><button disabled={selected.id === 8} onClick={() => chooseDay(selected.id + 1)}>Dia següent →</button></div>
@@ -617,13 +815,13 @@ export default function Home() {
             <div className="expense-list">{expenses.length ? expenses.map((expense) => <article key={expense.id}><div className="expense-day"><small>DIA</small><b>{expense.day}</b></div><div className="expense-copy"><small>{expense.category}</small><h4>{expense.concept}</h4>{expense.note && <p>{expense.note}</p>}</div><strong>{expense.amount.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</strong><div className="item-actions"><button onClick={() => editExpense(expense)} aria-label={`Editar ${expense.concept}`}>✎</button><button onClick={() => deleteExpense(expense.id)} aria-label={`Eliminar ${expense.concept}`}>×</button></div></article>) : <p className="empty-state">Encara no has registrat cap despesa.</p>}</div>
           </section>
 
-          <section className="data-tools"><div><p className="kicker">SEGURETAT DE LES DADES</p><h3>Còpia i exportació</h3><p>Les dades viuen en este navegador. Guarda una còpia per si canvies de mòbil o s’esborren les dades del navegador.</p></div><div className="tool-actions"><button onClick={backupData}>Guardar còpia</button><button onClick={() => restoreInput.current?.click()}>Restaurar dades</button><button onClick={exportCsv}>Exportar despeses CSV</button><input ref={restoreInput} type="file" accept="application/json,.json" onChange={restoreData} hidden/></div></section>
+          <section className="data-tools"><div><p className="kicker">SEGURETAT DE LES DADES</p><h3>Còpia completa, també de les fotos</h3><p>Les dades viuen en este navegador. La còpia inclou despeses, llistes i els {photoMemories.length} records familiars ({photoMegabytes.toFixed(1)} MB) de {totalMissionCount} missions possibles.</p></div><div className="tool-actions"><button onClick={backupData}>Guardar còpia amb fotos</button><button onClick={() => restoreInput.current?.click()}>Restaurar dades</button><button onClick={exportCsv}>Exportar despeses CSV</button><input ref={restoreInput} type="file" accept="application/json,.json" onChange={restoreData} hidden/></div></section>
         </div>}
       </section>
 
       <section className="base-banner"><div><p className="kicker">LA NOSTRA BASE</p><h2>La Callezuela no és un nucli comercial.</h2><p>Desdejuneu normalment a casa i planifiqueu el pa i la compra. A peu teniu el centre del poble, Sollovio i trams de la Ruta dels Molins; El Casal té piscina, jardí, zona infantil, futbolí, barbacoa i taules exteriors.</p><div className="base-links"><a href={contactById.casal.map} target="_blank" rel="noreferrer">Allotjament en Maps ↗</a><a href="tel:+34699862203">☎ 699 862 203</a><a href={contactById.chigre.map} target="_blank" rel="noreferrer">El Chigre ↗</a></div></div></section>
 
-      <footer><div className="brand"><span className="brand-mark">A</span><span>ASTÚRIES <b>2026</b></span></div><p>Josep, Caty, Lluís i Cesc · 16–23 d’agost</p><a href="#inici">Tornar amunt ↑</a></footer>
+      <footer><div className="brand"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></div><p>Josep, Caty, Lluís i Cesc · 16–23 d’agost</p><a href="#inici">Tornar amunt ↑</a></footer>
 
       <nav className="mobile-nav"><button onClick={() => jump("itinerari")} className={tab === "itinerari" ? "active" : ""}><span>⌖</span>Ruta</button><button onClick={() => jump("compres")} className={tab === "compres" ? "active" : ""}><span>▤</span>Compra</button><button onClick={() => jump("maleta")} className={tab === "maleta" ? "active" : ""}><span>✓</span>Llistes</button><button onClick={() => jump("reserves")} className={tab === "reserves" ? "active" : ""}><span>☎</span>Reserves</button><button onClick={() => jump("control")} className={tab === "control" ? "active" : ""}><span>€</span>Control</button></nav>
     </main>
