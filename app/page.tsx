@@ -18,7 +18,7 @@ import {
   type StoredReceipt,
 } from "./photo-memory";
 
-type TabKey = "itinerari" | "compres" | "maleta" | "reserves" | "control";
+type TabKey = "itinerari" | "menjars" | "compres" | "maleta" | "reserves" | "control";
 type CheckedState = Record<string, boolean>;
 
 type Expense = {
@@ -46,7 +46,7 @@ const STORAGE = {
   customTasks: "asturies-custom-tasks-v1",
   taskLabels: "asturies-task-labels-v1",
   shopping: "asturies-shopping-v1",
-  shoppingSchema: "asturies-shopping-schema-v4",
+  shoppingSchema: "asturies-shopping-schema-v5",
 };
 
 const categories = [
@@ -54,7 +54,7 @@ const categories = [
   "Entrades i activitats", "Aparcament i peatges", "Capritxos", "Altres i imprevistos",
 ];
 
-const paymentMethods = ["Per indicar", "Efectiu", "Targeta de dèbit", "Targeta de crèdit"];
+const paymentMethods = ["Per indicar", "Efectiu", "Targeta", "Targeta de dèbit", "Targeta de crèdit"];
 const payers = ["Per indicar", "Josep", "Cati"];
 const homeFoodGroup = "Menjar per a agafar de casa";
 const restockGroup = "Reposició Alimerka Avilés";
@@ -63,6 +63,7 @@ const shopGroupById: Record<string, string> = { xalo: homeFoodGroup, aviles: "Al
 
 const initialExpenses: Expense[] = [
   { id: "allotjament-el-casal", day: 1, concept: "Apartamentos El Casal", category: "Allotjament", amount: 725, note: "7 nits", paymentMethod: "Per indicar", paidBy: "Per indicar", createdAt: "2026-08-09T12:00:00.000Z" },
+  { id: "bus-lagos-covadonga", day: 6, concept: "Reserva bus Lagos de Covadonga", category: "Entrades i activitats", amount: 25.5, note: "Bitllets comprats · P1 12:00 / tornada 16:50", paymentMethod: "Targeta", paidBy: "Josep", createdAt: "2026-08-14T12:00:00.000Z" },
 ];
 
 const initialShopping: ShoppingItem[] = [
@@ -75,24 +76,48 @@ const initialShopping: ShoppingItem[] = [
   { id: "shop-llet-casa", label: "Llet", quantity: "1 litre", group: homeFoodGroup, checked: false },
   { id: "shop-ous-casa", label: "Ous", quantity: "6 unitats", group: homeFoodGroup, checked: false },
   { id: "shop-ensalada-casa", label: "Encisam i olives", quantity: "per al sopar d’arribada", group: homeFoodGroup, checked: false },
+  { id: "shop-fideus-casa", label: "Fideus i caldo de pollastre", quantity: "sopar dels xiquets · portar de Xaló", group: homeFoodGroup, checked: false },
+  { id: "shop-servilletes-casa", label: "Servilletes i bosses per a residus", quantity: "per als cinc pícnics", group: homeFoodGroup, checked: false },
   { id: "shop-oli-casa", label: "Oli d’oliva i sal", quantity: "només si El Casal no en té", group: homeFoodGroup, checked: false },
   { id: "shop-pa", label: "Pa per a congelar", quantity: "segons espai", group: "Alimerka Avilés", checked: false },
   { id: "shop-llet", label: "Llet", quantity: "2–3 litres", group: "Alimerka Avilés", checked: false },
   { id: "shop-tomaca", label: "Tomaca, encisam i olives", quantity: "per a ensalades", group: "Alimerka Avilés", checked: false },
-  { id: "shop-pollastre", label: "Pit de pollastre i altra carn", quantity: "2 menjars", group: "Sopars", checked: false },
-  { id: "shop-pasta", label: "Pasta i tonyina", quantity: "per a pícnic", group: "Pícnics", checked: false },
+  { id: "shop-pollastre", label: "Pit de pollastre i altra carn", quantity: "sopar Dia 2", group: "Alimerka Avilés", checked: false },
+  { id: "shop-pasta", label: "Pasta, tonyina, dacsa i ous", quantity: "pícnic del Dia 5", group: "Alimerka Avilés", checked: false },
   { id: "shop-aigua", label: "Aigua", quantity: "garrafes i botelles", group: "Alimerka Avilés", checked: false },
   { id: "shop-salmo", label: "Salmó", quantity: "4 racions · sopar Dia 3", group: "Alimerka Avilés", checked: false },
   { id: "shop-brocoli", label: "Bròcoli", quantity: "2 peces o bosses · sopar Dia 3", group: "Alimerka Avilés", checked: false },
-  { id: "shop-fideus", label: "Fideus i caldo de pollastre", quantity: "sopar dels xiquets", group: "Alimerka Avilés", checked: false },
-  { id: "shop-cogombre", label: "Cogombre", quantity: "2 unitats", group: "Alimerka Avilés", checked: false },
+  { id: "shop-iogurts", label: "Iogurts o formatgets", quantity: "complements refrigerats dels pícnics", group: "Alimerka Avilés", checked: false },
+  { id: "shop-fruita", label: "Fruita compatible amb Lluís", quantity: "peces fàcils de portar i repartir", group: "Alimerka Avilés", checked: false },
+  { id: "shop-sucs", label: "Sucs individuals", quantity: "per a pícnics i trajectes", group: "Alimerka Avilés", checked: false },
+  { id: "shop-crackers", label: "Crackers simples o de pizza", quantity: "snacks per als pícnics", group: "Alimerka Avilés", checked: false },
+  { id: "shop-arros", label: "Arròs", quantity: "sopar del Dia 6", group: "Alimerka Avilés", checked: false },
   { id: "shop-formatge-fresc", label: "Formatge fresc", quantity: "ensalada completa Dia 7", group: restockGroup, checked: false },
   { id: "shop-llom", label: "Llom", quantity: "entrepans i sopar dels Lagos", group: restockGroup, checked: false },
   { id: "shop-pa-reposicio", label: "Pa, pernil salat, pavo i anxoves", quantity: "pícnic dels Lagos", group: restockGroup, checked: false },
+  { id: "shop-snacks-reposicio", label: "Reposar aigua, fruita, iogurts, sucs i crackers", quantity: "Dies 5–8", group: restockGroup, checked: false },
+  { id: "breakfast-day1", label: "Dia 1 · Desdejuni a Cafestore Albacete", quantity: "café, torrades i lavabos · 07:50", group: "Desdejunis", checked: false },
+  { id: "breakfast-apartment", label: "Dies 2–7 · Desdejuni a El Casal", quantity: "café, llet, pa rústic, tomaca i companatge", group: "Desdejunis", checked: false },
+  { id: "breakfast-day8", label: "Dia 8 · Desdejuni abans de carregar", quantity: "torrades, café i pa amb tomaca o companatge per als xiquets", group: "Desdejunis", checked: false },
+  { id: "picnic-day1", label: "Dia 1 · Arévalo", quantity: "adults: truita; Lluís: pernil salat; Cesc: pavo + anxova", group: "Pícnics", checked: false },
+  { id: "picnic-day3", label: "Dia 3 · San Pedro de la Ribera", quantity: "adults i Lluís: truita + anxova + tomaca; Cesc: pavo + anxova", group: "Pícnics", checked: false },
+  { id: "picnic-day5", label: "Dia 5 · Cuevas del Mar", quantity: "ensalada de pasta amb tonyina, dacsa, olives, ou i tomaca", group: "Pícnics", checked: false },
+  { id: "picnic-day6", label: "Dia 6 · Lagos de Covadonga", quantity: "adults: llom; Lluís: pernil salat; Cesc: pavo + anxova", group: "Pícnics", checked: false },
+  { id: "picnic-day8", label: "Dia 8 · Medina del Campo / Rueda", quantity: "Josep, Cati i Lluís: pavo + tomaca; Cesc: pavo + anxova", group: "Pícnics", checked: false },
+  { id: "picnic-kit", label: "Kit comú de cada pícnic", quantity: "motxilla refrigerant, acumuladors, aigua, servilletes, fruita, lactis, suc i crackers", group: "Pícnics", checked: false },
+  { id: "dinner-day1", label: "Dia 1 · Sopar d’arribada", quantity: "ensalada, truita francesa, pavo a la planxa i pa", group: "Sopars", checked: false },
+  { id: "dinner-day2", label: "Dia 2 · Sopar a El Casal", quantity: "pollastre i verdura; per a Lluís, altra carn a la planxa", group: "Sopars", checked: false },
+  { id: "dinner-day3", label: "Dia 3 · Sopar a El Casal", quantity: "adults: salmó + bròcoli; xiquets: fideus amb caldo", group: "Sopars", checked: false },
+  { id: "dinner-day4", label: "Dia 4 · Sopar lleuger", quantity: "ensalada sense cogombre, companatge, pa i iogurt", group: "Sopars", checked: false },
+  { id: "dinner-day5", label: "Dia 5 · Sopar a La Amistad", quantity: "arribar a les 19:45 · terrassa sense reserva", group: "Sopars", checked: false },
+  { id: "dinner-day6", label: "Dia 6 · Sopar a El Casal", quantity: "llom a la planxa, arròs blanc i ensalada", group: "Sopars", checked: false },
+  { id: "dinner-day7", label: "Dia 7 · Sopar a El Casal", quantity: "ensalada completa amb tomaca, olives i formatge fresc", group: "Sopars", checked: false },
+  { id: "dinner-day8", label: "Dia 8 · Sopar a Xaló", quantity: "pizzes congelades i ensalada deixades preparades", group: "Sopars", checked: false },
 ];
 
 const taskById = Object.fromEntries(tasks.map((task) => [task.id, task]));
 const contactById = Object.fromEntries(contacts.map((contact) => [contact.id, contact]));
+const confirmedTaskIds = new Set(["yumay", "muja", "cafetin", "lagos", "piguena"]);
 
 const checklistGroups = [
   { key: "abans", title: "Abans d’eixir", icon: "✓", description: "Casa, cotxe i informació accessible." },
@@ -104,11 +129,11 @@ const checklistGroups = [
 const reservationRows = [
   { taskId: "casal-arribada", contactId: "casal", title: "El Casal · allotjament", date: "16–23/08 · avisar arribada", cost: "725 €", state: "confirmed" },
   { taskId: "yumay", contactId: "yumay", title: "Mesón de Furacu", date: "17/08 · 14:00 · 4 persones", cost: "Confirmat", state: "confirmed" },
-  { taskId: "muja", contactId: "muja", title: "Invitacions MUJA", date: "19/08 · matí", cost: "Gratuït dimecres", state: "pending" },
-  { taskId: "cafetin", contactId: "cafetin", title: "El Cafetín", date: "19/08 · 14:15", cost: "Per confirmar", state: "pending" },
+  { taskId: "muja", contactId: "muja", title: "Entrades MUJA", date: "19/08 · 13:00 · 4 persones", cost: "Gratuït dimecres", state: "confirmed" },
+  { taskId: "cafetin", contactId: "cafetin", title: "El Cafetín", date: "19/08 · 14:00 · 4 persones", cost: "Confirmat", state: "confirmed" },
   { taskId: "puerto", contactId: "puerto", title: "La Amistad · terrassa", date: "20/08 · estar a les 19:45", cost: "Sense reserva", state: "walkin" },
   { taskId: "lagos", contactId: "lagos", title: "Bus Lagos des de P1", date: "21/08 · 12:00 / 16:50", cost: "25,50 € · comprat", state: "confirmed" },
-  { taskId: "piguena", contactId: "piguena", title: "El Pigüeña", date: "22/08 · 13:45", cost: "48–60 €", state: "pending" },
+  { taskId: "piguena", contactId: "piguena", title: "Sidrería Pichote", date: "22/08 · 14:00 · 4 persones", cost: "Confirmat", state: "confirmed" },
 ];
 
 type RestaurantAlternative = {
@@ -160,9 +185,63 @@ const foodStopsByTitle: Record<string, { reviews: string; alternativeId?: string
   "Dinar · Mesón de Furacu": { reviews: maps("Mesón de Furacu ressenyes"), alternativeId: "yumay" },
   "Dinar · El Cafetín": { reviews: maps("Restaurante El Cafetín Lastres ressenyes"), alternativeId: "cafetin" },
   "Sopar · La Amistad": { reviews: maps("Bar Sidrería La Amistad Llanes ressenyes"), alternativeId: "puerto" },
-  "Dinar · El Pigüeña": { reviews: maps("Sidrería El Pigüeña Oviedo ressenyes"), alternativeId: "piguena" },
+  "Dinar · Sidrería Pichote": { reviews: maps("Sidrería Pichote Oviedo ressenyes"), alternativeId: "piguena" },
   "Honrubia · Moya": { reviews: maps("Hotel Restaurante Moya Honrubia ressenyes") },
 };
+
+type MealEntry = {
+  moment: "Desdejuni" | "Dinar" | "Sopar";
+  time: string;
+  kind: "casa" | "picnic" | "fora";
+  kindLabel: string;
+  place: string;
+  menu: string;
+  note: string;
+  confirmed?: boolean;
+};
+
+const mealPlanByDay: Array<{ day: number; date: string; title: string; meals: MealEntry[] }> = [
+  { day: 1, date: "Dg. 16", title: "Xaló → Astúries", meals: [
+    { moment: "Desdejuni", time: "07:50", kind: "fora", kindLabel: "Fora", place: "Cafestore Albacete", menu: "Café i torrades.", note: "Parada funcional amb lavabos abans de continuar." },
+    { moment: "Dinar", time: "12:50", kind: "picnic", kindLabel: "Pícnic", place: "Arévalo", menu: "Adults: truita; Lluís: pernil salat; Cesc: pavo amb anxova. Olives, lactis, fruita compatible i aigua.", note: "Motxilla refrigerant, acumuladors, servilletes i bossa per als residus." },
+    { moment: "Sopar", time: "19:30", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Ensalada, truita francesa, pavo a la planxa i pa.", note: "Portar-ho de Xaló agrupat en una bossa accessible." },
+  ] },
+  { day: 2, date: "Dl. 17", title: "Avilés + Salinas", meals: [
+    { moment: "Desdejuni", time: "08:30", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Café, llet i torrades de pa rústic amb tomaca i companatge.", note: "Preparar també les motxilles de platja." },
+    { moment: "Dinar", time: "14:00", kind: "fora", kindLabel: "Restaurant", place: "Mesón de Furacu", menu: "Menú del dia i cuina asturiana.", note: "Reserva confirmada per als quatre; avisar de les al·lèrgies de Lluís.", confirmed: true },
+    { moment: "Sopar", time: "21:15", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Adults i Cesc: pollastre i verdura; Lluís: altra carn a la planxa.", note: "Deixar la preparació avançada abans d’anar a Salinas." },
+  ] },
+  { day: 3, date: "Dt. 18", title: "Cudillero + cap Vidio", meals: [
+    { moment: "Desdejuni", time: "08:30", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Café, llet i torrades amb tomaca o companatge.", note: "Preparar els entrepans abans d’eixir." },
+    { moment: "Dinar", time: "14:15", kind: "picnic", kindLabel: "Pícnic", place: "San Pedro de la Ribera", menu: "Adults i Lluís: truita + anxova + tomaca; Cesc: pavo + anxova. Olives, lactis, fruita, suc i crackers.", note: "Truita ben quallada; portar aigua, servilletes i motxilla refrigerant." },
+    { moment: "Sopar", time: "21:15", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Adults: salmó a la planxa amb bròcoli. Lluís i Cesc: fideus amb caldo de pollastre.", note: "Els fideus i el caldo es porten de Xaló." },
+  ] },
+  { day: 4, date: "Dc. 19", title: "MUJA + Llastres", meals: [
+    { moment: "Desdejuni", time: "09:00", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Café, llet i torrades amb tomaca o companatge.", note: "Dia sense pícnic; portar només aigua i un snack menut." },
+    { moment: "Dinar", time: "14:00", kind: "fora", kindLabel: "Restaurant", place: "El Cafetín · Llastres", menu: "Dinar reservat després del MUJA.", note: "Reserva confirmada per als quatre; eixir del museu a les 13:40.", confirmed: true },
+    { moment: "Sopar", time: "21:30", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Ensalada d’encisam, tomaca i olives, companatge, pa i iogurt.", note: "Sopar lleuger i sense cogombre després de la reposició." },
+  ] },
+  { day: 5, date: "Dj. 20", title: "Ribadesella + Llanes", meals: [
+    { moment: "Desdejuni", time: "08:15", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Café i torrades.", note: "Carregar l’ensalada de pasta completament freda." },
+    { moment: "Dinar", time: "12:45", kind: "picnic", kindLabel: "Pícnic", place: "Cuevas del Mar", menu: "Ensalada de pasta amb tonyina, dacsa, olives, ou i tomaca; lactis, fruita, suc i crackers.", note: "Motxilla refrigerant, aigua, servilletes, quatre bols i quatre forquetes." },
+    { moment: "Sopar", time: "19:45", kind: "fora", kindLabel: "Fora", place: "Bar Sidrería La Amistad · Llanes", menu: "Sopar de cuina asturiana.", note: "Terrassa sense reserva: arribar obligatòriament a les 19:45." },
+  ] },
+  { day: 6, date: "Dv. 21", title: "Lagos de Covadonga", meals: [
+    { moment: "Desdejuni", time: "08:30", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Café, llet i torrades.", note: "Revisar bitllets, pícnic i acumuladors abans d’eixir." },
+    { moment: "Dinar", time: "13:10", kind: "picnic", kindLabel: "Pícnic", place: "Lagos de Covadonga", menu: "Adults: entrepà de llom; Lluís: pernil salat; Cesc: pavo + anxova. Olives, lactis, fruita, suc i crackers.", note: "Portar 4–5 l d’aigua, servilletes i motxilla refrigerant." },
+    { moment: "Sopar", time: "21:00", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Llom a la planxa, arròs blanc i ensalada.", note: "Sopar ràpid després de les dutxes." },
+  ] },
+  { day: 7, date: "Ds. 22", title: "Oviedo + Naranco", meals: [
+    { moment: "Desdejuni", time: "08:30", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Café, llet i torrades amb tomaca o companatge.", note: "Motxilla lleugera; no cal nevereta gran." },
+    { moment: "Dinar", time: "14:00", kind: "fora", kindLabel: "Restaurant", place: "Sidrería Pichote · Oviedo", menu: "Cuina asturiana i cachopos.", note: "Reserva confirmada per als quatre; avisar de les al·lèrgies de Lluís.", confirmed: true },
+    { moment: "Sopar", time: "20:30", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Ensalada completa amb encisam, tomaca, olives i formatge fresc.", note: "Sopar senzill mentre s’acaben les maletes." },
+  ] },
+  { day: 8, date: "Dg. 23", title: "Astúries → Xaló", meals: [
+    { moment: "Desdejuni", time: "07:00", kind: "casa", kindLabel: "A casa", place: "El Casal", menu: "Torrades i café; pa amb tomaca o companatge per a Lluís i Cesc.", note: "Carregar la motxilla refrigerant al final." },
+    { moment: "Dinar", time: "12:00", kind: "picnic", kindLabel: "Pícnic", place: "Medina del Campo / Rueda", menu: "Josep, Cati i Lluís: pavo + tomaca; Cesc: pavo + anxova. Olives, lactis, fruita, suc, crackers i aigua.", note: "Parada màxima de 45 minuts, amb servilletes i bossa per als residus." },
+    { moment: "Sopar", time: "20:15", kind: "casa", kindLabel: "A casa", place: "Xaló", menu: "Pizzes congelades i ensalada.", note: "Deixar-ho preparat a casa abans del viatge." },
+  ] },
+];
 
 type Forecast = { icon: string; temp: string; summary: string };
 
@@ -190,6 +269,7 @@ const commonsSource = (filename: string) => `https://commons.wikimedia.org/wiki/
 const placeImage = (filename: string) => `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/places/${filename}`;
 const familyCutout = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/family/familia-avella-ferrer.png`;
 const routeMapImage = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/mapa-ruta-avella-ferrer.png`;
+const infographicImage = (day: number) => `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/infografies/dia-${day}.webp`;
 const elCasalImage = placeImage("el-casal.jpg");
 const elCasalBooking = "https://www.booking.com/hotel/es/apartamentos-el-casal.es.html";
 const elCasalTourism = "https://www.turismoasturias.es/organiza-tu-viaje/donde-dormir/turismo-rural/apartamentos-rurales/el-casal";
@@ -203,6 +283,44 @@ const routeMapStops = [
   { day: 6, label: "Lagos · Covadonga · Cangas" },
   { day: 7, label: "Oviedo · Naranco" },
   { day: 8, label: "Astúries · Xaló" },
+];
+
+const infographicItems = days.map((day) => ({
+  day: day.id,
+  date: day.date,
+  title: day.title,
+  subtitle: day.subtitle,
+  image: infographicImage(day.id),
+}));
+
+type HealthGraphicKey = "dieta" | "exercici";
+
+type HealthDayPlan = {
+  day: number;
+  dietTitle: string;
+  dietRules: string[];
+  workoutTime: string;
+  workoutTitle: string;
+  workoutDuration: string;
+  workoutRules: string[];
+};
+
+const healthGraphicImage = (filename: string) => `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/salut/${filename}`;
+
+const healthGraphics: Array<{ key: HealthGraphicKey; title: string; subtitle: string; image: string }> = [
+  { key: "dieta", title: "Dieta recomanada per dies", subtitle: "Quantitats orientatives i decisions senzilles per disfrutar sense passar-se.", image: healthGraphicImage("dieta-recomanada.webp") },
+  { key: "exercici", title: "Planificació esportiva", subtitle: "Sessions de 5 a 22 minuts combinades amb les caminades del viatge.", image: healthGraphicImage("exercici-viatge.webp") },
+];
+
+const healthPlanByDay: HealthDayPlan[] = [
+  { day: 1, dietTitle: "Trajecte llarg: menjar moderat i sopar complet", dietRules: ["Desdejuni amb torrada i proteïna.", "Entrepà i pícnic en porcions moderades.", "Sopar: 2 ous, uns 120 g de pavo, ensalada i 40–50 g de pa."], workoutTime: "19:15 · després de descarregar", workoutTitle: "Activació suau", workoutDuration: "8–10 min", workoutRules: ["2 voltes", "10 esquats · 8 flexions inclinades", "12 ponts de glutis · planxa 20 s"] },
+  { day: 2, dietTitle: "Dinar a Furacu: controlar els extres", dietRules: ["Pa: 60–80 g i un iogurt al desdejuni.", "Primer lleuger i segon de peix o carn: 150–200 g.", "Mitja ració de creïlles; sopar de pollastre o altra carn amb verdura."], workoutTime: "08:05 · abans del desdejuni", workoutTitle: "Força A", workoutDuration: "18–20 min", workoutRules: ["2 voltes · descans 45–60 s", "Esquats, flexions, rem i ponts de glutis", "Press d’espatles i planxa 25 s"] },
+  { day: 3, dietTitle: "Pícnic i sopar de salmó", dietRules: ["Entrepà de truita amb tomaca i anxova al pícnic.", "Olives, lacti i fruita compatible; evitar picar entre hores.", "Salmó: 180–200 g amb bròcoli i uns 40 g de pa."], workoutTime: "08:15 · abans del desdejuni", workoutTitle: "Mobilitat", workoutDuration: "8 min", workoutRules: ["Maluc, esquena i espatles", "2×10 esquats suaus", "Sense sessió forta"] },
+  { day: 4, dietTitle: "Dinar al Cafetín i sopar lleuger", dietRules: ["Compartir entrant només si abellix.", "Prioritzar peix o una ració moderada d’arròs.", "Controlar pa i postres; sopar d’ensalada gran, 80–100 g de companatge i iogurt."], workoutTime: "08:45 · abans del desdejuni", workoutTitle: "Descans actiu", workoutDuration: "5–8 min", workoutRules: ["Estiraments suaus", "Caminar i recuperar", "Sense força"] },
+  { day: 5, dietTitle: "Ensalada de pasta i sopar fora", dietRules: ["Pasta: 80–90 g en sec, amb tonyina o ou.", "Fruita compatible o iogurt de postres.", "A La Amistad: compartir cachopo o triar planxa amb ensalada."], workoutTime: "07:45 · abans del desdejuni", workoutTitle: "Força B", workoutDuration: "18–20 min", workoutRules: ["2 voltes", "Pes mort romanés, flexions, rem i esquats", "Curl de bíceps i planxa 25–30 s"] },
+  { day: 6, dietTitle: "Ruta dels Lagos: aigua i proteïna", dietRules: ["Desdejuni un poc més complet.", "Entrepà: uns 100 g de pa amb proteïna i molta aigua.", "Sopar: llom 160–180 g, arròs i ensalada."], workoutTime: "20:50 · en tornar dels Lagos", workoutTitle: "Estiraments de recuperació", workoutDuration: "5 min", workoutRules: ["La ruta ja compta com a entrenament", "Cames, maluc i esquena", "Sense força"] },
+  { day: 7, dietTitle: "Sidreria al migdia, compensar de nit", dietRules: ["Compartir el plat fort i afegir ensalada.", "Pa i postres amb control.", "Sopar: ensalada completa i 100–125 g de formatge fresc."], workoutTime: "07:55 · abans del desdejuni", workoutTitle: "Força C", workoutDuration: "20–22 min", workoutRules: ["3 voltes", "Esquats, flexions, pes mort, rem i press", "15 ponts de glutis · planxa 30 s"] },
+  { day: 8, dietTitle: "Tornada: evitar picar per avorriment", dietRules: ["Desdejuni amb pa, companatge i iogurt.", "Pícnic: entrepà amb proteïna i complements mesurats.", "Sopar: mitja pizza per adult amb una ensalada gran."], workoutTime: "06:35 · abans de l’últim repàs", workoutTitle: "Mobilitat suau", workoutDuration: "8 min", workoutRules: ["Mobilitat general", "2×12 esquats suaus", "Res intens abans del cotxe"] },
 ];
 
 const visitDetailsByTitle: Record<string, VisitDetails> = {
@@ -388,7 +506,7 @@ function ContactCard({ contact, small = false }: { contact: Contact; small?: boo
         {contact.web && <a href={contact.web} target="_blank" rel="noreferrer">Web ↗</a>}
       </div>
       {alternative && <div className="restaurant-alternative">
-        <small>ALTERNATIVA SI ESTÀ COMPLET</small>
+        <small>ALTERNATIVA SI HI HA UNA INCIDÈNCIA</small>
         <strong>{alternative.name}</strong>
         <span>{alternative.detail}</span>
         <div>
@@ -449,6 +567,8 @@ export default function Home() {
   const [filter, setFilter] = useState("tots");
   const [tab, setTab] = useState<TabKey>("itinerari");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openInfographicDay, setOpenInfographicDay] = useState<number | null>(null);
+  const [openHealthGraphic, setOpenHealthGraphic] = useState<HealthGraphicKey | null>(null);
   const [checked, setChecked] = useState<CheckedState>({});
   const [onlyPending, setOnlyPending] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -477,11 +597,14 @@ export default function Home() {
       for (const [legacyId, taskIds] of Object.entries(legacyTaskMap)) {
         if (localStorage.getItem(`asturies-${legacyId}`) === "1") taskIds.forEach((id) => { stored[id] = true; });
       }
+      confirmedTaskIds.forEach((id) => { stored[id] = true; });
       setChecked(stored);
       localStorage.setItem(STORAGE.checked, JSON.stringify(stored));
       try {
         const savedExpenses = JSON.parse(localStorage.getItem(STORAGE.expenses) || "null") || initialExpenses;
-        setExpenses(savedExpenses.map((expense: Expense) => ({ ...expense, paymentMethod: expense.paymentMethod || "Per indicar", paidBy: expense.paidBy || "Per indicar" })));
+        const normalizedExpenses = savedExpenses.map((expense: Expense) => ({ ...expense, paymentMethod: expense.paymentMethod || "Per indicar", paidBy: expense.paidBy || "Per indicar" }));
+        const existingExpenseIds = new Set(normalizedExpenses.map((expense: Expense) => expense.id));
+        setExpenses([...initialExpenses.filter((expense) => !existingExpenseIds.has(expense.id)), ...normalizedExpenses]);
       } catch { setExpenses(initialExpenses); }
       const savedBudget = Number(localStorage.getItem(STORAGE.budget));
       if (savedBudget > 0) setBudgetTotal(savedBudget);
@@ -490,20 +613,22 @@ export default function Home() {
       try {
         const savedShopping = JSON.parse(localStorage.getItem(STORAGE.shopping) || "null") || initialShopping;
         let migratedShopping = savedShopping
-          .filter((item: ShoppingItem) => !item.label.toLocaleLowerCase("ca").includes("cacau"))
+          .filter((item: ShoppingItem) => !["shop-cogombre", "shop-fideus"].includes(item.id) && !/(cacau|cogombre|pepino)/i.test(item.label))
           .map((item: ShoppingItem) => ({
             ...item,
             label: item.label.replace(/pernil serrà/gi, "Pernil salat").replace(/titot/gi, "pavo"),
             group: item.group === "Compra principal" ? "Alimerka Avilés" : item.group === "Des de Xaló" ? homeFoodGroup : item.group,
           }));
-        if (localStorage.getItem(STORAGE.shoppingSchema) !== "4") {
+        if (localStorage.getItem(STORAGE.shoppingSchema) !== "5") {
+          const defaultShoppingById = Object.fromEntries(initialShopping.map((item) => [item.id, item]));
           migratedShopping = migratedShopping.map((item: ShoppingItem) => ({
-            ...item,
-            group: item.group === "Alimerka El Prestín" ? restockGroup : item.group,
+            ...(defaultShoppingById[item.id] || item),
+            checked: item.checked,
+            group: item.group === "Alimerka El Prestín" ? restockGroup : defaultShoppingById[item.id]?.group || item.group,
           }));
           const existingIds = new Set(migratedShopping.map((item: ShoppingItem) => item.id));
           migratedShopping = [...migratedShopping, ...initialShopping.filter((item) => !existingIds.has(item.id))];
-          localStorage.setItem(STORAGE.shoppingSchema, "4");
+          localStorage.setItem(STORAGE.shoppingSchema, "5");
         }
         setShoppingItems(migratedShopping);
       } catch { setShoppingItems(initialShopping); }
@@ -548,6 +673,37 @@ export default function Home() {
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE.customTasks, JSON.stringify(customTasks)); }, [customTasks, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE.taskLabels, JSON.stringify(taskLabels)); }, [taskLabels, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem(STORAGE.shopping, JSON.stringify(shoppingItems)); }, [shoppingItems, hydrated]);
+
+  useEffect(() => {
+    if (openInfographicDay === null) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenInfographicDay(null);
+      if (event.key === "ArrowLeft") setOpenInfographicDay((day) => day === null ? null : day === 1 ? days.length : day - 1);
+      if (event.key === "ArrowRight") setOpenInfographicDay((day) => day === null ? null : day === days.length ? 1 : day + 1);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [openInfographicDay]);
+
+  useEffect(() => {
+    if (openHealthGraphic === null) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenHealthGraphic(null);
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") setOpenHealthGraphic((graphic) => graphic === "dieta" ? "exercici" : "dieta");
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [openHealthGraphic]);
 
   const replacePhotoState = (stored: StoredPhotoMemory) => {
     const nextMemory = { ...stored, url: URL.createObjectURL(stored.blob) };
@@ -663,7 +819,7 @@ export default function Home() {
     if (!amountText) return;
     const amount = Number(amountText.replace(",", "."));
     if (!Number.isFinite(amount) || amount <= 0) return;
-    const paymentMethod = window.prompt("Forma de pagament: Efectiu, Targeta de dèbit o Targeta de crèdit", expense.paymentMethod) || expense.paymentMethod;
+    const paymentMethod = window.prompt("Forma de pagament: Efectiu, Targeta, Targeta de dèbit o Targeta de crèdit", expense.paymentMethod) || expense.paymentMethod;
     const paidBy = window.prompt("Qui ha pagat: Josep o Cati", expense.paidBy) || expense.paidBy;
     setExpenses((current) => current.map((item) => item.id === expense.id ? { ...item, concept, amount, paymentMethod, paidBy } : item));
   };
@@ -723,6 +879,9 @@ export default function Home() {
 
   const filteredDays = useMemo(() => filter === "tots" ? days : days.filter((day) => day.kind === filter), [filter]);
   const selected = days.find((day) => day.id === activeDay) ?? days[0];
+  const openInfographic = openInfographicDay === null ? null : infographicItems.find((item) => item.day === openInfographicDay) || null;
+  const selectedHealthPlan = healthPlanByDay.find((item) => item.day === selected.id) ?? healthPlanByDay[0];
+  const selectedHealthGraphic = openHealthGraphic === null ? null : healthGraphics.find((item) => item.key === openHealthGraphic) || null;
   const completedReservations = reservationRows.filter((row) => row.state === "confirmed" || checked[row.taskId]).length;
   const completedTasks = [...tasks, ...customTasks].filter((task) => checked[task.id]).length;
   const allTaskCount = tasks.length + customTasks.length;
@@ -822,25 +981,35 @@ export default function Home() {
     reader.readAsText(file);
   };
 
+  const scrollToSection = (id: string, includePlannerTabs = false, delay = 60) => {
+    setMenuOpen(false);
+    window.setTimeout(() => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const headerHeight = document.querySelector<HTMLElement>(".topbar")?.offsetHeight || 0;
+      const tabbarHeight = includePlannerTabs ? (document.querySelector<HTMLElement>(".tabbar")?.offsetHeight || 0) : 0;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerHeight - tabbarHeight - 10;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    }, delay);
+  };
+
   const jump = (nextTab: TabKey) => {
     setTab(nextTab);
-    setMenuOpen(false);
-    window.setTimeout(() => document.getElementById("planner")?.scrollIntoView({ behavior: "smooth", block: "start" }), 30);
+    scrollToSection("planner", false, 50);
   };
 
   const chooseDay = (id: number) => {
     setActiveDay(id);
     setTab("itinerari");
-    setMenuOpen(false);
-    window.setTimeout(() => document.getElementById(`itinerari-dia-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    scrollToSection(`itinerari-dia-${id}`, true, 90);
   };
 
   return (
     <main>
       <header className="topbar">
-        <a className="brand" href="#inici" aria-label="Inici"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></a>
+        <a className="brand" href="#inici" aria-label="Inici" onClick={(event) => { event.preventDefault(); scrollToSection("inici"); }}><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></a>
         <nav className={menuOpen ? "main-nav open" : "main-nav"}>
-          <a href="#allotjament" onClick={() => setMenuOpen(false)}>Allotjament</a><button onClick={() => jump("itinerari")}>Itinerari</button><button onClick={() => jump("compres")}>Compres</button><button onClick={() => jump("maleta")}>Llistes</button><button onClick={() => jump("reserves")}>Reserves</button><button onClick={() => jump("control")}>Control</button>
+          <button onClick={() => scrollToSection("allotjament")}>Allotjament</button><button onClick={() => scrollToSection("infografies")}>Infografies</button><button onClick={() => scrollToSection("dieta-exercici")}>Dieta i exercici</button><button onClick={() => jump("itinerari")}>Itinerari</button><button onClick={() => jump("menjars")}>Menjars</button><button onClick={() => jump("compres")}>Compres</button><button onClick={() => jump("maleta")}>Llistes</button><button onClick={() => jump("reserves")}>Reserves</button><button onClick={() => jump("control")}>Control</button>
         </nav>
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Obrir menú">{menuOpen ? "×" : "☰"}</button>
       </header>
@@ -851,7 +1020,7 @@ export default function Home() {
           <p className="eyebrow">EL NOSTRE VIATGE FAMILIAR</p>
           <h1 className="family-title"><span>Els</span><em>Avellà-Ferrer</em><span>en Astúries</span></h1>
           <p className="hero-season">(estiu 2026)</p>
-          <p className="hero-lead">Tot el viatge al mòbil: horaris, rutes, restaurants, compres, llistes i despeses guardades automàticament en este dispositiu.</p>
+          <p className="hero-lead">Tot el viatge al mòbil: horaris, rutes, restaurants, dieta, exercici, compres, llistes i despeses guardades automàticament en este dispositiu.</p>
           <div className="hero-actions"><button className="primary" onClick={() => jump("itinerari")}>Començar la guia <span>↓</span></button><button className="secondary" onClick={() => jump("reserves")}>{reservationRows.length - completedReservations} gestions pendents ↗</button></div>
         </div>
         <div className="hero-visual">
@@ -870,9 +1039,9 @@ export default function Home() {
       </section>
 
       <section className="quick-strip">
-        <a href="#allotjament"><span>⌂</span><p><small>EL NOSTRE ALLOTJAMENT</small><strong>Descobrir El Casal ↓</strong></p></a>
-        <div><span>◉</span><p><small>DATES</small><strong>16–23 agost 2026</strong></p></div>
-        <a href="tel:+34699862203"><span>☎</span><p><small>EL CASAL</small><strong>699 862 203</strong></p></a>
+        <button onClick={() => scrollToSection("allotjament")}><span>⌂</span><p><small>EL NOSTRE ALLOTJAMENT</small><strong>Descobrir El Casal ↓</strong></p></button>
+        <button onClick={() => scrollToSection("infografies")}><span>▧</span><p><small>NOVA SECCIÓ VISUAL</small><strong>Infografies de cada dia ↓</strong></p></button>
+        <button onClick={() => scrollToSection("dieta-exercici")}><span>♥</span><p><small>PLA PERSONAL DE JOSEP</small><strong>Dieta i exercici ↓</strong></p></button>
         <button onClick={() => jump("control")}><span>€</span><p><small>DESPESES</small><strong>{spent.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} € de {budgetTotal.toLocaleString("ca-ES")} €</strong></p></button>
       </section>
 
@@ -899,6 +1068,53 @@ export default function Home() {
         <div className="lodging-practical"><span>ⓘ</span><p><b>Important per a la família:</b> és un allotjament rural i no un nucli comercial; per això convé arribar amb el sopar del primer dia i els desdejunis inicials. El transport públic figura a menys de 500 m, però per a la compra i les excursions continuarem depenent del Tiguan. Amb Cesc, supervisió constant en la piscina i les zones exteriors.</p></div>
       </section>
 
+      <section className="section infographic-section" id="infografies" aria-labelledby="infographic-title">
+        <div className="section-heading infographic-heading">
+          <div><p className="kicker">LA GUIA VISUAL DEL VIATGE</p><h2 id="infographic-title">Infografies de cada dia.</h2></div>
+          <p>Obri cada làmina a pantalla completa per descobrir les curiositats, els llocs i les claus de la jornada. També podràs entrar directament des de l’itinerari de cada dia.</p>
+        </div>
+        <div className="infographic-grid">
+          {infographicItems.map((item) => <button type="button" className="infographic-card" key={item.day} onClick={() => setOpenInfographicDay(item.day)} aria-label={`Obrir la infografia del dia ${item.day}: ${item.title}`}>
+            <span className="infographic-preview">
+              <img src={item.image} alt={`Infografia del dia ${item.day}: ${item.title}`} loading="lazy" onError={(event) => { event.currentTarget.hidden = true; event.currentTarget.parentElement?.classList.add("image-pending"); }}/>
+              <span className="infographic-pending">Infografia pendent d’incorporar</span>
+              <b>DIA {String(item.day).padStart(2, "0")}</b>
+            </span>
+            <span className="infographic-copy"><small>{item.date}</small><strong>{item.title}</strong><em>{item.subtitle}</em><span>Veure a pantalla completa ↗</span></span>
+          </button>)}
+        </div>
+      </section>
+
+      <section className="section health-section" id="dieta-exercici" aria-labelledby="health-title">
+        <div className="section-heading health-heading">
+          <div><p className="kicker">PLA PERSONAL DE JOSEP</p><h2 id="health-title">Dieta i exercici.</h2></div>
+          <p>Un pla realista per mantindre la rutina sense restar energia al viatge: quantitats orientatives, aigua, sessions curtes i totes les caminades ja previstes.</p>
+        </div>
+        <div className="health-principles">
+          <article><span>◎</span><div><small>OBJECTIU</small><strong>Disfrutar i controlar quantitats</strong></div></article>
+          <article><span>●</span><div><small>PROTEÏNA</small><strong>120–140 g al dia</strong></div></article>
+          <article><span>💧</span><div><small>AIGUA</small><strong>2–2,5 l al dia</strong></div></article>
+          <article><span>⚖</span><div><small>REGLA</small><strong>Dinar fort, sopar més lleuger</strong></div></article>
+        </div>
+        <div className="health-graphic-grid">
+          {healthGraphics.map((graphic) => <button type="button" key={graphic.key} className="health-graphic-card" onClick={() => setOpenHealthGraphic(graphic.key)}>
+            <span className="health-graphic-media"><img src={graphic.image} alt={graphic.title} loading="lazy"/><b>{graphic.key === "dieta" ? "DIETA" : "EXERCICI"}</b></span>
+            <span className="health-graphic-copy"><small>INFOGRAFIA COMPLETA</small><strong>{graphic.title}</strong><em>{graphic.subtitle}</em><span>Obrir a pantalla completa ↗</span></span>
+          </button>)}
+        </div>
+        <div className="health-day-grid">
+          {healthPlanByDay.map((plan) => { const day = days.find((item) => item.id === plan.day)!; return <article className="health-day-card" key={plan.day} id={`salut-dia-${plan.day}`}>
+            <header><span>{plan.day}</span><div><small>{day.shortDate} · {plan.workoutTime}</small><h3>{day.title}</h3></div></header>
+            <div className="health-day-columns">
+              <section><small>🍴 DIETA</small><h4>{plan.dietTitle}</h4><ul>{plan.dietRules.map((rule) => <li key={rule}>{rule}</li>)}</ul></section>
+              <section><small>🏋 EXERCICI · {plan.workoutDuration}</small><h4>{plan.workoutTitle}</h4><ul>{plan.workoutRules.map((rule) => <li key={rule}>{rule}</li>)}</ul></section>
+            </div>
+            <button type="button" onClick={() => chooseDay(plan.day)}>Veure’l dins de l’itinerari →</button>
+          </article>; })}
+        </div>
+        <div className="health-note"><span>♥</span><p><b>La prioritat és la constància, no fer-ho perfecte.</b> Si un exercici molesta o fa mal, reduir repeticions o fer una versió més fàcil. Les quantitats són orientatives per a Josep, no per als xiquets.</p></div>
+      </section>
+
       <section className="section route-section" id="ruta">
         <div className="section-heading"><div><p className="kicker">LA RUTA D’UN PRIMER COLP D’ULL</p><h2>Un viatge, huit jornades.</h2></div><p>Prem qualsevol dia per obrir el pla complet, els llocs exactes, la preparació i les alternatives.</p></div>
         <div className="route-rail">{days.map((day) => <button key={day.id} onClick={() => chooseDay(day.id)} className={activeDay === day.id ? "active" : ""}><span>{day.id}<em title={forecastByDay[day.id].summary}>{forecastByDay[day.id].icon}</em></span><small>{day.shortDate}</small><strong>{day.title.split("+")[0]}</strong></button>)}</div>
@@ -906,7 +1122,7 @@ export default function Home() {
 
       <section className="section planner" id="planner">
         <div className="tabbar" role="tablist" aria-label="Seccions de la guia">
-          {([['itinerari','Itinerari'],['compres','Compra'],['maleta','Llistes'],['reserves','Reserves'],['control','Control €']] as [TabKey,string][]).map(([key,label]) => <button key={key} onClick={() => setTab(key)} className={tab === key ? "active" : ""} role="tab">{label}</button>)}
+          {([['itinerari','Itinerari'],['menjars','Menjars'],['compres','Compra'],['maleta','Llistes'],['reserves','Reserves'],['control','Control €']] as [TabKey,string][]).map(([key,label]) => <button key={key} onClick={() => jump(key)} className={tab === key ? "active" : ""} role="tab">{label}</button>)}
         </div>
 
         {tab === "itinerari" && <div className="tab-panel">
@@ -915,9 +1131,14 @@ export default function Home() {
           <div className="day-grid">{filteredDays.map((day) => { const forecast = forecastByDay[day.id]; return <button key={day.id} className={`day-card ${day.color} ${activeDay === day.id ? "selected" : ""}`} onClick={() => chooseDay(day.id)}><div className="day-card-top"><span>DIA {day.id}</span><span className="weather-pill" title={forecast.summary}><b>{forecast.icon}</b><small>{forecast.temp}</small></span></div><small>{day.date}</small><h3>{day.title}</h3><p>{day.subtitle}</p><div className="day-weather-copy">{forecast.summary}</div><div className="day-stats"><span>{day.distance}</span><span>{day.budget}</span></div></button>; })}</div>
 
           <article className={`day-detail ${selected.color}`} id={`itinerari-dia-${selected.id}`}>
-            <div className="detail-head"><div className="detail-number">{String(selected.id).padStart(2,"0")}</div><div><p>{selected.date}</p><h2>{selected.title}</h2><span>{selected.subtitle}</span></div><div className="detail-weather" title={forecastByDay[selected.id].summary}><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ 14/08</small><strong>{forecastByDay[selected.id].temp}</strong></div></div><a href={selected.map} target="_blank" rel="noreferrer" className="map-button">Ruta completa en Maps ↗</a></div>
+            <div className="detail-head"><div className="detail-number">{String(selected.id).padStart(2,"0")}</div><div><p>{selected.date}</p><h2>{selected.title}</h2><span>{selected.subtitle}</span></div><div className="detail-weather" title={forecastByDay[selected.id].summary}><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ 14/08</small><strong>{forecastByDay[selected.id].temp}</strong></div></div><div className="detail-actions"><button type="button" className="infographic-button" onClick={() => setOpenInfographicDay(selected.id)}>▧ Infografia del dia</button><a href={selected.map} target="_blank" rel="noreferrer" className="map-button">Ruta completa en Maps ↗</a></div></div>
             <div className="detail-facts"><div><small>DISTÀNCIA</small><strong>{selected.distance}</strong></div><div><small>CONDUCCIÓ</small><strong>{selected.driving}</strong></div><div><small>PRESSUPOST</small><strong>{selected.budget}</strong></div></div>
             <div className="day-brief"><div><small>OBJECTIU REAL DEL DIA</small><p>{selected.objective}</p></div><div className="weather-brief"><div className="weather-current"><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ ACTUAL · 14/08</small><strong>{forecastByDay[selected.id].temp}</strong><p>{forecastByDay[selected.id].summary}</p></div></div><p className="weather-advice"><b>Decisió del dia:</b> {selected.weather}</p></div></div>
+            <section className="itinerary-health">
+              <div className="itinerary-health-title"><span>♥</span><div><small>DIETA I EXERCICI · DIA {selected.id}</small><h3>{selectedHealthPlan.workoutTitle}</h3><p>{selectedHealthPlan.workoutTime} · {selectedHealthPlan.workoutDuration}</p></div></div>
+              <div><small>RECOMANACIÓ DE DIETA</small><strong>{selectedHealthPlan.dietTitle}</strong><p>{selectedHealthPlan.dietRules.join(" ")}</p></div>
+              <button type="button" onClick={() => scrollToSection(`salut-dia-${selected.id}`)}>Veure el pla complet ↗</button>
+            </section>
             {selected.id === 6 && <section className="ticket-panel"><div><span>🎟️ BITLLETS COMPRATS</span><h3>P1 12:00 → Lagos · tornada 16:50</h3><p>Divendres 21 · 4 viatgers · 25,50 €. Presentar al mòbil; no cal imprimir. El PDF amb els codis i la documentació no està publicat en la web.</p></div><div className="ticket-email-note"><small>ON ESTÀ EL PDF</small><strong>Gmail · josepavella@gmail.com</strong><span>Correu «Gracias por comprar en Alsa» del 14/08/2026 · obrir l’adjunt des del mòbil.</span></div></section>}
             {selectedHighlights.length > 0 && <section className="day-highlights"><div className="highlights-heading"><p className="kicker">QUÈ VEUREM</p><h3>Els punts que donen sentit al dia</h3><p>Una vista ràpida abans d’obrir l’horari: què és cada lloc, quant de temps li dedicarem i on convé aparcar.</p></div><div className="highlights-grid">{selectedHighlights.map(({ item, visit, parking }) => <article key={`${selected.id}-${item.title}`}><img src={visit.image} alt={visit.imageAlt} loading="lazy"/><div><small>{item.time} · {item.tag || "visita"}</small><h4>{item.title}</h4><p>{visit.description}</p><div>{item.map && <a href={item.map} target="_blank" rel="noreferrer">Ubicació ↗</a>}{parking && <a href={parking.map} target="_blank" rel="noreferrer">🅿 {parking.cost} ↗</a>}</div></div></article>)}</div></section>}
             <div className="detail-columns">
@@ -929,7 +1150,7 @@ export default function Home() {
                 const photoMission = photoMissionByTitle[item.title];
                 const photoMemory = photoMemories.find((memory) => memory.id === `day-${selected.id}-${item.title}`);
                 return <div className="timeline-item" key={`${selected.id}-${index}`}><time>{item.time}</time><span className="timeline-dot"/><div className="timeline-copy"><div><strong>{item.title}</strong>{item.tag && <em>{item.tag}</em>}</div><p>{item.note}</p><div className="timeline-links">{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir ubicació ↗</a>}{foodStop && <a className="review-action" href={foodStop.reviews} target="_blank" rel="noreferrer">★ Ressenyes Google ↗</a>}</div>
-                  {alternative && <div className="timeline-alternative"><span>Alternativa si està complet</span><strong>{alternative.name}</strong><small>{alternative.detail}</small><div>{alternative.phone && <a href={`tel:${alternative.phone}`}>☎ {alternative.phoneLabel}</a>}<a href={alternative.map} target="_blank" rel="noreferrer">Maps ↗</a><a href={alternative.reviews} target="_blank" rel="noreferrer">Ressenyes ↗</a></div></div>}
+                  {alternative && <div className="timeline-alternative"><span>Alternativa si hi ha una incidència</span><strong>{alternative.name}</strong><small>{alternative.detail}</small><div>{alternative.phone && <a href={`tel:${alternative.phone}`}>☎ {alternative.phoneLabel}</a>}<a href={alternative.map} target="_blank" rel="noreferrer">Maps ↗</a><a href={alternative.reviews} target="_blank" rel="noreferrer">Ressenyes ↗</a></div></div>}
                   {visit && <details className="visit-details"><summary><span className="plus-icon">+</span><span>Veure descripció, foto i aparcament</span></summary><div className="visit-card"><div className="visit-media"><img src={visit.image} alt={visit.imageAlt} loading="lazy" onError={(event) => { event.currentTarget.hidden = true; event.currentTarget.parentElement?.classList.add("image-missing"); }}/><span>📍 Fotografia temporalment no disponible</span></div><div><p>{visit.description}</p>{parking && <a className="parking-card" href={parking.map} target="_blank" rel="noreferrer"><span className="parking-icon">P</span><span><small>APARCAMENT PRÒXIM</small><b>{parking.name}</b><em>{parking.cost} · obrir ruta ↗</em></span></a>}<div>{item.map && <a href={item.map} target="_blank" rel="noreferrer">Obrir lloc en Maps ↗</a>}<a href={visit.source} target="_blank" rel="noreferrer">Font de la foto ↗</a></div></div></div></details>}
                   {photoMission && <PhotoMissionCard day={selected.id} placeTitle={item.title} mission={photoMission} memory={photoMemory} busy={photoBusy === `day-${selected.id}-${item.title}`} onPhoto={(file) => savePhoto(selected.id, item.title, photoMission, file)} onNote={() => photoMemory && editPhotoNote(photoMemory)} onDelete={() => photoMemory && removePhoto(photoMemory)} />}
                 </div></div>;
@@ -954,8 +1175,32 @@ export default function Home() {
           </article>
         </div>}
 
+        {tab === "menjars" && <div className="tab-panel simple-panel meals-panel">
+          <div className="panel-intro meals-intro"><p className="kicker">MENJARS DEL VIATGE</p><h2>Què menjarem cada dia.</h2><p>Desdejunis, cinc pícnics, restaurants i sopars reunits en un únic lloc. Cada fitxa indica l’hora, el lloc, el tipus de menjar i què cal recordar abans d’eixir.</p></div>
+          <div className="meal-summary">
+            <article><span>🥪</span><div><small>PÍCNICS</small><strong>5 dies</strong><p>Dies 1, 3, 5, 6 i 8</p></div></article>
+            <article><span>🍽️</span><div><small>MENJARS FORA</small><strong>5 parades</strong><p>Cafestore, Furacu, Cafetín, La Amistad i Pichote</p></div></article>
+            <article><span>🏠</span><div><small>SOPARS A CASA</small><strong>7 dies</strong><p>Només el Dia 5 sopem fora</p></div></article>
+            <article><span>☕</span><div><small>DESDEJUNIS</small><strong>8 dies</strong><p>Dia 1 fora; la resta a El Casal</p></div></article>
+          </div>
+          <section className="picnic-essentials">
+            <div><p className="kicker">KIT FIX DE PÍCNIC</p><h3>El que no pot faltar en cap motxilla</h3><p>Preparar la part refrigerada l’última i mantindre sempre separat i identificat el menjar de Lluís.</p></div>
+            <ul><li>Motxilla o nevereta refrigerant</li><li>Quatre acumuladors de fred</li><li>Aigua suficient per als quatre</li><li>Servilletes i bosses per als residus</li><li>Fruita compatible amb Lluís</li><li>Iogurts o formatgets</li><li>Sucs individuals</li><li>Olives i crackers simples o de pizza</li><li>Medicació accessible</li></ul>
+          </section>
+          <div className="meal-day-list">
+            {mealPlanByDay.map((day) => <article className="meal-day-card" key={day.day}>
+              <header><span>{String(day.day).padStart(2, "0")}</span><div><small>{day.date}</small><h3>{day.title}</h3></div></header>
+              <div className="meal-entry-grid">{day.meals.map((meal) => <section className={`meal-entry ${meal.kind}`} key={`${day.day}-${meal.moment}`}>
+                <div className="meal-entry-top"><span>{meal.moment}</span><em>{meal.kindLabel}</em>{meal.confirmed && <b>✓ Confirmat</b>}</div>
+                <time>{meal.time}</time><h4>{meal.place}</h4><p>{meal.menu}</p><small><b>A tindre en compte:</b> {meal.note}</small>
+              </section>)}</div>
+            </article>)}
+          </div>
+          <div className="meal-shopping-link"><div><p className="kicker">PREPARACIÓ I COMPRA</p><h3>Tot està connectat amb les llistes</h3><p>Els ingredients, snacks, desdejunis i sopars apareixen també com a elements marcables en «Compra».</p></div><button type="button" onClick={() => jump("compres")}>Obrir les llistes de compra →</button></div>
+        </div>}
+
         {tab === "compres" && <div className="tab-panel simple-panel">
-          <div className="panel-intro"><p className="kicker">LLISTA DE LA COMPRA</p><h2>Afegix, marca i compra.</h2><p>Queden {pendingShopping} productes pendents. Qualsevol canvi es guarda automàticament en este dispositiu.</p></div>
+          <div className="panel-intro"><p className="kicker">COMPRA I PREPARACIÓ</p><h2>De Xaló a cada pícnic.</h2><p>Queden {pendingShopping} elements pendents. Les llistes separen què portem de casa, què comprem a Avilés i què hem de preparar per als desdejunis, pícnics i sopars.</p></div>
           <form className="add-form shopping-add" id="shopping-add-form" onSubmit={addShoppingItem}>
             <label><span>Producte</span><input value={newShopping.label} onChange={(event) => setNewShopping((current) => ({ ...current, label: event.target.value }))} placeholder="Ex. ous o salmó" required/></label>
             <label><span>Quantitat o nota</span><input value={newShopping.quantity} onChange={(event) => setNewShopping((current) => ({ ...current, quantity: event.target.value }))} placeholder="Ex. 2 paquets"/></label>
@@ -966,7 +1211,7 @@ export default function Home() {
           <div className="store-list compact-stores">{shops.map((shop, index) => { const group = shopGroupById[shop.id]; const items = shoppingItems.filter((item) => item.group === group); const isHomeFood = shop.id === "xalo"; return <article className="store-card store-with-list" key={shop.id}><div className="shopping-index">{isHomeFood ? "🏠" : "🛒"}</div><div className="store-main"><small>{isHomeFood ? "MENJAR DE CASA" : `COMPRA ${String(index).padStart(2, "0")}`} · {shop.note}</small><h3>{shop.when}</h3><address>{shop.address}</address><p>{shop.items}</p><div className="store-actions"><a href={shop.map} target="_blank" rel="noreferrer">Google Maps ↗</a>{shop.web && <a href={shop.web} target="_blank" rel="noreferrer">Fitxa i horari ↗</a>}<button onClick={() => { setNewShopping((current) => ({ ...current, group })); document.getElementById("shopping-add-form")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>+ {isHomeFood ? "Afegir menjar de casa" : "Afegir a esta compra"}</button></div><div className="store-shopping"><div className="shopping-group-head"><h4><span>{isHomeFood ? "🏠" : "🛒"}</span> {isHomeFood ? "Preparat per a carregar" : "Dins de la cistella"}</h4><b>{items.filter((item) => item.checked).length}/{items.length}</b></div>{items.length ? items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.label}`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>) : <p className="empty-state">Encara no hi ha aliments en esta llista.</p>}</div><TaskCheck id={shop.taskId} label={taskLabels[shop.taskId]} checked={!!checked[shop.taskId]} onToggle={toggleTask} compact/></div></article>; })}</div>
           <div className="subheading store-heading"><div><p className="kicker">ALTRES LLISTES</p><h3>Desdejunis, pícnics i sopars</h3></div></div>
           <div className="shopping-groups">{shoppingGroups.filter((group) => !Object.values(shopGroupById).includes(group)).map((group) => { const items = shoppingItems.filter((item) => item.group === group); if (!items.length) return null; return <section key={group}><div className="shopping-group-head"><h3><span className="basket-emoji">🛒</span>{group}</h3><span>{items.filter((item) => item.checked).length}/{items.length}</span></div>{items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.label}`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>)}</section>; })}</div>
-          <div className="menu-bank"><h3>Menús ja repartits</h3><div><span>Salmó + bròcoli · Dia 3</span><span>Fideus amb caldo · xiquets Dia 2</span><span>Ensalada de pasta · Dia 5</span><span>Llom + arròs · Dia 6</span><span>Ensalada completa + formatge fresc · Dia 7</span></div></div>
+          <div className="menu-bank meal-menu-bank"><h3>Els menús, explicats dia per dia</h3><p>La nova secció «Menjars» reunix lloc, hora, tipus de menjar, menú i preparació de cada jornada.</p><button type="button" onClick={() => jump("menjars")}>Veure tots els menjars →</button></div>
           <div className="allergy-note"><b>Atenció alimentària</b><p>Lluís té al·lèrgia als fruits secs i a diverses fruites. Comproveu ingredients i traces, pregunteu per la contaminació creuada, porteu la medicació accessible i manteniu separat el seu menjar de pícnic.</p></div>
         </div>}
 
@@ -997,7 +1242,7 @@ export default function Home() {
         </div>}
 
         {tab === "control" && <div className="tab-panel simple-panel control-panel">
-          <div className="panel-intro"><p className="kicker">CONTROL DEL VIATGE</p><h2>Pressupost i despeses reals.</h2><p>L’apartament de 725 € ja està introduït. Afegix cada pagament i veuràs al moment quant queda disponible.</p></div>
+          <div className="panel-intro"><p className="kicker">CONTROL DEL VIATGE</p><h2>Pressupost i despeses reals.</h2><p>Ja estan introduïts l’apartament de 725 € i els bitllets del bus dels Lagos, pagats amb targeta. Afegix cada pagament i veuràs al moment quant queda disponible.</p></div>
 
           <section className="control-summary">
             <div className="budget-editor"><label htmlFor="budget-total">PRESSUPOST TOTAL</label><div><input id="budget-total" type="number" min="1" step="10" value={budgetTotal} onChange={(event) => setBudgetTotal(Math.max(0, Number(event.target.value)))} /><span>€</span></div><small>Previsió orientativa: 1.597–1.782 €</small></div>
@@ -1052,9 +1297,25 @@ export default function Home() {
         </div>
       </section>
 
-      <footer><div className="brand"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></div><p>Josep, Cati, Lluís i Cesc · 16–23 d’agost</p><a href="#inici">Tornar amunt ↑</a></footer>
+      {openInfographic && <div className="infographic-modal" role="dialog" aria-modal="true" aria-labelledby="infographic-modal-title" onClick={() => setOpenInfographicDay(null)}>
+        <div className="infographic-modal-panel" onClick={(event) => event.stopPropagation()}>
+          <header className="infographic-modal-header"><div><small>DIA {openInfographic.day} · {openInfographic.date}</small><h2 id="infographic-modal-title">{openInfographic.title}</h2></div><button type="button" className="infographic-close" onClick={() => setOpenInfographicDay(null)} aria-label="Tancar la infografia">×</button></header>
+          <div className="infographic-modal-media"><img src={openInfographic.image} alt={`Infografia completa del dia ${openInfographic.day}: ${openInfographic.title}`}/></div>
+          <nav className="infographic-modal-nav" aria-label="Canviar d’infografia"><button type="button" onClick={() => setOpenInfographicDay(openInfographic.day === 1 ? infographicItems.length : openInfographic.day - 1)}>← Dia anterior</button><span>{openInfographic.day} / {infographicItems.length}</span><button type="button" onClick={() => setOpenInfographicDay(openInfographic.day === infographicItems.length ? 1 : openInfographic.day + 1)}>Dia següent →</button></nav>
+        </div>
+      </div>}
 
-      <nav className="mobile-nav"><button onClick={() => jump("itinerari")} className={tab === "itinerari" ? "active" : ""}><span>⌖</span>Ruta</button><button onClick={() => jump("compres")} className={tab === "compres" ? "active" : ""}><span>▤</span>Compra</button><button onClick={() => jump("maleta")} className={tab === "maleta" ? "active" : ""}><span>✓</span>Llistes</button><button onClick={() => jump("reserves")} className={tab === "reserves" ? "active" : ""}><span>☎</span>Reserves</button><button onClick={() => jump("control")} className={tab === "control" ? "active" : ""}><span>€</span>Control</button></nav>
+      {selectedHealthGraphic && <div className="infographic-modal" role="dialog" aria-modal="true" aria-labelledby="health-modal-title" onClick={() => setOpenHealthGraphic(null)}>
+        <div className="infographic-modal-panel health-modal-panel" onClick={(event) => event.stopPropagation()}>
+          <header className="infographic-modal-header"><div><small>DIETA I EXERCICI · VIATGE 2026</small><h2 id="health-modal-title">{selectedHealthGraphic.title}</h2></div><button type="button" className="infographic-close" onClick={() => setOpenHealthGraphic(null)} aria-label="Tancar la infografia">×</button></header>
+          <div className="infographic-modal-media"><img src={selectedHealthGraphic.image} alt={`Infografia completa: ${selectedHealthGraphic.title}`}/></div>
+          <nav className="infographic-modal-nav" aria-label="Canviar d’infografia"><button type="button" onClick={() => setOpenHealthGraphic(selectedHealthGraphic.key === "dieta" ? "exercici" : "dieta")}>← Canviar làmina</button><span>{selectedHealthGraphic.key === "dieta" ? "Dieta" : "Exercici"}</span><button type="button" onClick={() => setOpenHealthGraphic(selectedHealthGraphic.key === "dieta" ? "exercici" : "dieta")}>Següent →</button></nav>
+        </div>
+      </div>}
+
+      <footer><div className="brand"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></div><p>Josep, Cati, Lluís i Cesc · 16–23 d’agost</p><a href="#inici" onClick={(event) => { event.preventDefault(); scrollToSection("inici"); }}>Tornar amunt ↑</a></footer>
+
+      <nav className="mobile-nav"><button onClick={() => jump("itinerari")} className={tab === "itinerari" ? "active" : ""}><span>⌖</span>Ruta</button><button onClick={() => jump("menjars")} className={tab === "menjars" ? "active" : ""}><span>🍴</span>Menjar</button><button onClick={() => scrollToSection("dieta-exercici")}><span>♥</span>Dieta</button><button onClick={() => jump("compres")} className={tab === "compres" ? "active" : ""}><span>▤</span>Compra</button><button onClick={() => jump("maleta")} className={tab === "maleta" ? "active" : ""}><span>✓</span>Llistes</button><button onClick={() => jump("reserves")} className={tab === "reserves" ? "active" : ""}><span>☎</span>Reserves</button><button onClick={() => jump("control")} className={tab === "control" ? "active" : ""}><span>€</span>Control</button></nav>
     </main>
   );
 }

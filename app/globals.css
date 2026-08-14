@@ -855,3 +855,261 @@ footer p,footer a{font-size:14px}
   }
   .managed-toggle small{font-size:14px}
 }
+
+/* Infografies diàries i navegació precisa */
+html{scroll-padding-top:82px}
+#inici,#allotjament,#infografies,#dieta-exercici,#ruta,#planner,.day-detail,.health-day-card{scroll-margin-top:82px}
+.main-nav{gap:clamp(12px,1.8vw,26px)}
+.main-nav button,.main-nav a{white-space:nowrap}
+
+.infographic-section{padding-top:86px;padding-bottom:88px}
+.infographic-heading>p{max-width:520px}
+.infographic-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:42px}
+.infographic-card{min-width:0;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:9px;background:var(--paper);text-align:left;cursor:pointer;box-shadow:0 8px 28px rgba(11,63,56,.08);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.infographic-card:hover{transform:translateY(-5px);border-color:rgba(15,116,100,.38);box-shadow:0 20px 42px rgba(11,63,56,.15)}
+.infographic-card:focus-visible,.infographic-button:focus-visible,.infographic-close:focus-visible,.infographic-modal-nav button:focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+.infographic-preview{position:relative;display:block;aspect-ratio:4/5;overflow:hidden;background:linear-gradient(145deg,#dbe8df,#f1f4ed)}
+.infographic-preview img{display:block;width:100%;height:100%;object-fit:cover;object-position:top center;transition:transform .35s ease}
+.infographic-card:hover .infographic-preview img{transform:scale(1.025)}
+.infographic-preview:after{content:"";position:absolute;inset:auto 0 0;height:40%;background:linear-gradient(transparent,rgba(7,39,34,.72));pointer-events:none}
+.infographic-preview>b{position:absolute;z-index:2;left:14px;bottom:13px;padding:7px 9px;border-radius:4px;background:var(--lime);color:var(--deep);font-size:10px;letter-spacing:.14em}
+.infographic-pending{display:none;position:absolute;inset:0;place-items:center;padding:25px;text-align:center;color:#557067;font-size:13px;font-weight:800}
+.infographic-preview.image-pending .infographic-pending{display:grid}
+.infographic-copy{display:flex;min-height:178px;flex-direction:column;padding:18px}
+.infographic-copy small{color:var(--green);font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.infographic-copy strong{margin-top:8px;font-family:Georgia,serif;font-size:23px;font-weight:400;line-height:1.13;color:var(--deep)}
+.infographic-copy em{margin-top:8px;color:var(--muted);font-size:13px;font-style:normal;line-height:1.5}
+.infographic-copy>span{margin-top:auto;padding-top:15px;color:var(--green);font-size:11px;font-weight:900}
+
+.detail-actions{margin-left:auto;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.detail-actions .map-button{margin-left:0;text-align:center}
+.infographic-button{min-height:43px;padding:0 16px;border:1px solid var(--lime);border-radius:4px;background:var(--lime);color:var(--deep);font-size:11px;font-weight:900;white-space:nowrap;cursor:pointer}
+.infographic-button:hover{background:white;border-color:white}
+
+.infographic-modal{position:fixed;z-index:200;inset:0;display:grid;place-items:center;padding:20px;background:rgba(4,23,20,.88);backdrop-filter:blur(10px)}
+.infographic-modal-panel{width:min(96vw,1500px);height:min(94dvh,1050px);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:#0b2723;color:white;box-shadow:0 35px 100px rgba(0,0,0,.48)}
+.infographic-modal-header{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:17px 22px;border-bottom:1px solid rgba(255,255,255,.14);background:#0b3f38}
+.infographic-modal-header small{display:block;color:var(--lime);font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
+.infographic-modal-header h2{margin:4px 0 0;font-family:Georgia,serif;font-size:clamp(24px,3vw,38px);font-weight:400;line-height:1.05}
+.infographic-close{width:46px;height:46px;flex:0 0 46px;border:1px solid rgba(255,255,255,.28);border-radius:50%;background:rgba(255,255,255,.07);color:white;font-size:30px;line-height:1;cursor:pointer}
+.infographic-close:hover{background:white;color:var(--deep)}
+.infographic-modal-media{flex:1;min-height:0;display:grid;place-items:center;padding:14px;background:#071d1a}
+.infographic-modal-media img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;box-shadow:0 10px 45px rgba(0,0,0,.35)}
+.infographic-modal-nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:12px 18px;border-top:1px solid rgba(255,255,255,.13);background:#0b3f38}
+.infographic-modal-nav button{min-height:42px;padding:0 15px;border:1px solid rgba(255,255,255,.26);border-radius:4px;background:transparent;color:white;font-size:12px;font-weight:800;cursor:pointer}
+.infographic-modal-nav button:last-child{justify-self:end}
+.infographic-modal-nav button:hover{border-color:var(--lime);color:var(--lime)}
+.infographic-modal-nav span{color:#c9ddd7;font-size:12px;font-weight:800}
+
+@media(max-width:1050px){
+  .infographic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .infographic-preview{aspect-ratio:16/10}
+  .infographic-copy{min-height:150px}
+  .detail-head{flex-wrap:wrap}
+  .detail-actions{flex:1 0 100%;margin-left:0;display:grid;grid-template-columns:1fr 1fr}
+}
+
+@media(min-width:901px) and (max-width:1150px){
+  .topbar{padding-left:24px;padding-right:24px}
+  .brand{font-size:12px}
+  .main-nav{gap:10px}
+  .main-nav button,.main-nav a{font-size:13px}
+}
+
+@media(max-width:900px){
+  .main-nav.open{max-height:calc(100dvh - 72px);overflow:auto;gap:4px;padding:12px 20px}
+  .main-nav.open button,.main-nav.open a{width:100%;padding:12px;text-align:left;border-bottom:1px solid var(--line)}
+  .detail-actions{grid-column:1/-1;margin-left:0;display:grid;grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:600px){
+  html{scroll-padding-top:70px}
+  #inici,#allotjament,#infografies,#dieta-exercici,#ruta,#planner,.day-detail,.health-day-card{scroll-margin-top:70px}
+  .infographic-section{padding-top:58px;padding-bottom:64px}
+  .infographic-grid{grid-template-columns:1fr;gap:13px;margin-top:30px}
+  .infographic-card{display:grid;grid-template-columns:118px minmax(0,1fr);min-height:174px}
+  .infographic-preview{height:100%;min-height:174px;aspect-ratio:auto}
+  .infographic-preview>b{left:9px;bottom:9px;font-size:9px}
+  .infographic-copy{min-height:174px;padding:16px 14px}
+  .infographic-copy strong{font-size:21px}
+  .infographic-copy em{font-size:13px}
+  .infographic-copy>span{font-size:10px}
+  .detail-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .detail-actions .map-button,.infographic-button{width:100%;min-height:46px}
+  .infographic-modal{padding:0}
+  .infographic-modal-panel{width:100%;height:100dvh;border:0;border-radius:0}
+  .infographic-modal-header{padding:12px 14px}
+  .infographic-modal-header small{font-size:8px}
+  .infographic-modal-header h2{font-size:23px}
+  .infographic-close{width:42px;height:42px;flex-basis:42px}
+  .infographic-modal-media{padding:7px}
+  .infographic-modal-nav{gap:8px;padding:9px 10px calc(9px + env(safe-area-inset-bottom))}
+  .infographic-modal-nav button{padding:0 10px;font-size:11px}
+}
+
+/* Organització diària dels menjars */
+.meals-panel{background:linear-gradient(180deg,#fffdf8,#f6f3e9)}
+.meals-intro{max-width:820px}
+.meal-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:38px 0 18px}
+.meal-summary article{display:grid;grid-template-columns:46px 1fr;align-items:start;gap:12px;padding:18px;border:1px solid #d4ddd6;border-radius:8px;background:white}
+.meal-summary article>span{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#edf4cf;font-size:22px}
+.meal-summary small{display:block;color:var(--green);font-size:9px;font-weight:900;letter-spacing:.12em}
+.meal-summary strong{display:block;margin-top:4px;font-family:Georgia,serif;font-size:24px;font-weight:400;color:var(--deep)}
+.meal-summary p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+.picnic-essentials{display:grid;grid-template-columns:minmax(260px,.78fr) minmax(0,1.22fr);gap:30px;margin:18px 0 32px;padding:28px;border-radius:9px;background:var(--deep);color:white}
+.picnic-essentials h3{margin:0;font-family:Georgia,serif;font-size:30px;font-weight:400}
+.picnic-essentials p:not(.kicker){margin:12px 0 0;color:#c9ddd7;line-height:1.65}
+.picnic-essentials ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 18px;margin:0;padding:0;list-style:none}
+.picnic-essentials li{position:relative;padding:10px 10px 10px 30px;border:1px solid rgba(255,255,255,.14);border-radius:5px;background:rgba(255,255,255,.06);font-size:13px;line-height:1.4}
+.picnic-essentials li:before{content:"✓";position:absolute;left:11px;color:var(--lime);font-weight:900}
+.meal-day-list{display:grid;gap:16px}
+.meal-day-card{overflow:hidden;border:1px solid var(--line);border-radius:9px;background:white;box-shadow:0 8px 28px rgba(11,63,56,.07)}
+.meal-day-card>header{display:flex;align-items:center;gap:16px;padding:18px 22px;background:#eef3e9;border-bottom:1px solid var(--line)}
+.meal-day-card>header>span{width:50px;height:50px;display:grid;place-items:center;border-radius:50%;background:var(--deep);color:var(--lime);font-family:Georgia,serif;font-size:23px}
+.meal-day-card>header small{display:block;color:var(--green);font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.meal-day-card>header h3{margin:3px 0 0;font-family:Georgia,serif;font-size:27px;font-weight:400;color:var(--deep)}
+.meal-entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.meal-entry{position:relative;min-width:0;padding:20px 22px 23px;border-right:1px solid var(--line)}
+.meal-entry:last-child{border-right:0}
+.meal-entry:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:#809a8f}
+.meal-entry.picnic:before{background:#d79b51}.meal-entry.fora:before{background:#6e9ab7}.meal-entry.casa:before{background:var(--green)}
+.meal-entry-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.meal-entry-top>span{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--green)}
+.meal-entry-top>em{padding:5px 7px;border-radius:20px;background:#edf1ec;color:#526860;font-size:9px;font-style:normal;font-weight:800}
+.meal-entry-top>b{padding:5px 7px;border-radius:20px;background:#ddefc8;color:#39723b;font-size:9px}
+.meal-entry time{display:block;margin-top:17px;color:var(--green);font-size:12px;font-weight:900}
+.meal-entry h4{margin:4px 0 9px;font-family:Georgia,serif;font-size:22px;font-weight:400;line-height:1.15;color:var(--deep)}
+.meal-entry>p{margin:0;color:#405a52;font-size:14px;line-height:1.55}
+.meal-entry>small{display:block;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.55}
+.meal-entry>small b{color:#6f5737}
+.meal-shopping-link{display:flex;align-items:center;justify-content:space-between;gap:26px;margin-top:28px;padding:25px 28px;border-radius:8px;background:#e2ef9b;color:var(--deep)}
+.meal-shopping-link h3{margin:0;font-family:Georgia,serif;font-size:27px;font-weight:400}
+.meal-shopping-link p:not(.kicker){margin:8px 0 0;color:#40594f}
+.meal-shopping-link button,.meal-menu-bank button{flex:0 0 auto;min-height:45px;padding:0 16px;border:1px solid var(--deep);border-radius:4px;background:var(--deep);color:white;font-size:12px;font-weight:900;cursor:pointer}
+.meal-menu-bank p{max-width:640px;color:#c9ddd7;line-height:1.6}
+.meal-menu-bank button{margin-top:5px;background:var(--lime);border-color:var(--lime);color:var(--deep)}
+
+/* Les infografies són horitzontals 4:3 */
+.infographic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.infographic-preview{aspect-ratio:4/3}
+.infographic-preview img{object-fit:cover}
+
+@media(max-width:1100px){
+  .main-nav{display:none}
+  .menu-toggle{display:block}
+  .main-nav.open{display:flex;position:absolute;top:72px;left:0;right:0;max-height:calc(100dvh - 72px);overflow:auto;gap:4px;padding:12px 20px;background:var(--paper);flex-direction:column;box-shadow:var(--shadow)}
+  .main-nav.open button,.main-nav.open a{width:100%;padding:12px;text-align:left;border-bottom:1px solid var(--line)}
+  .meal-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:760px){
+  .meal-entry-grid{grid-template-columns:1fr}
+  .meal-entry{border-right:0;border-bottom:1px solid var(--line)}
+  .meal-entry:last-child{border-bottom:0}
+  .picnic-essentials{grid-template-columns:1fr}
+}
+
+@media(max-width:600px){
+  .infographic-card{display:block;min-height:0}
+  .infographic-preview{height:auto;min-height:0;aspect-ratio:4/3}
+  .infographic-copy{min-height:158px}
+  .meal-summary{grid-template-columns:1fr;gap:8px;margin-top:28px}
+  .meal-summary article{padding:15px}
+  .picnic-essentials{gap:20px;padding:22px 18px}
+  .picnic-essentials ul{grid-template-columns:1fr}
+  .meal-day-card>header{padding:15px}
+  .meal-day-card>header>span{width:43px;height:43px;font-size:20px}
+  .meal-day-card>header h3{font-size:23px}
+  .meal-entry{padding:18px}
+  .meal-entry>p{font-size:15px}
+  .meal-entry>small{font-size:13px}
+  .meal-shopping-link{display:block;padding:22px 18px}
+  .meal-shopping-link button{width:100%;margin-top:18px}
+  .mobile-nav{grid-template-columns:repeat(6,1fr)}
+  .mobile-nav button{font-size:9px}
+  .mobile-nav button span{font-size:18px}
+}
+
+/* Dieta i exercici · pla personal del viatge */
+.health-section{background:linear-gradient(180deg,#f4f8f4 0%,#fffaf0 100%)}
+.health-heading>p{max-width:610px}
+.health-principles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:38px 0 22px}
+.health-principles article{display:grid;grid-template-columns:48px 1fr;align-items:center;gap:12px;padding:17px 18px;border:1px solid #c9d7cf;border-radius:9px;background:rgba(255,255,255,.88)}
+.health-principles article>span{width:46px;height:46px;display:grid;place-items:center;border-radius:50%;background:var(--deep);color:var(--lime);font-size:20px;font-weight:900}
+.health-principles small{display:block;color:var(--green);font-size:9px;font-weight:900;letter-spacing:.12em}
+.health-principles strong{display:block;margin-top:4px;color:var(--deep);font-size:14px;line-height:1.35}
+.health-graphic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0 42px}
+.health-graphic-card{display:grid;grid-template-columns:minmax(190px,.85fr) minmax(0,1.15fr);min-width:0;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:white;text-align:left;cursor:pointer;box-shadow:0 12px 34px rgba(11,63,56,.09);transition:.22s ease}
+.health-graphic-card:focus-visible,.health-day-card>button:focus-visible,.itinerary-health>button:focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+.health-graphic-card:hover{transform:translateY(-4px);border-color:#7ea99b;box-shadow:0 19px 42px rgba(11,63,56,.14)}
+.health-graphic-media{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;background:#e7efe8}
+.health-graphic-media:after{content:"";position:absolute;inset:auto 0 0;height:45%;background:linear-gradient(transparent,rgba(7,39,34,.72))}
+.health-graphic-media img{width:100%;height:100%;display:block;object-fit:cover;object-position:top center;transition:transform .3s ease}
+.health-graphic-card:hover img{transform:scale(1.025)}
+.health-graphic-media b{position:absolute;z-index:2;left:13px;bottom:12px;padding:7px 9px;border-radius:4px;background:var(--lime);color:var(--deep);font-size:10px;letter-spacing:.12em}
+.health-graphic-copy{display:flex;min-width:0;flex-direction:column;padding:23px}
+.health-graphic-copy small{color:var(--green);font-size:9px;font-weight:900;letter-spacing:.12em}
+.health-graphic-copy strong{margin-top:8px;font-family:Georgia,serif;font-size:27px;font-weight:400;line-height:1.12;color:var(--deep)}
+.health-graphic-copy em{margin-top:10px;color:var(--muted);font-size:14px;font-style:normal;line-height:1.55}
+.health-graphic-copy>span{margin-top:auto;padding-top:16px;color:var(--green);font-size:11px;font-weight:900}
+.health-day-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.health-day-card{overflow:hidden;border:1px solid var(--line);border-radius:10px;background:white;box-shadow:0 8px 26px rgba(11,63,56,.06)}
+.health-day-card>header{display:flex;align-items:center;gap:14px;padding:17px 20px;border-bottom:1px solid var(--line);background:#eaf1e9}
+.health-day-card>header>span{width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;border-radius:50%;background:var(--deep);color:var(--lime);font-family:Georgia,serif;font-size:23px}
+.health-day-card>header small{display:block;color:var(--green);font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.health-day-card>header h3{margin:3px 0 0;font-family:Georgia,serif;font-size:24px;font-weight:400;color:var(--deep)}
+.health-day-columns{display:grid;grid-template-columns:1fr 1fr}
+.health-day-columns>section{padding:20px;border-right:1px solid var(--line)}
+.health-day-columns>section:last-child{border-right:0;background:#fffaf0}
+.health-day-columns small{color:var(--green);font-size:9px;font-weight:900;letter-spacing:.1em}
+.health-day-columns h4{margin:7px 0 12px;font-family:Georgia,serif;font-size:20px;font-weight:400;line-height:1.2;color:var(--deep)}
+.health-day-columns ul{margin:0;padding:0;list-style:none}
+.health-day-columns li{position:relative;margin-top:8px;padding-left:17px;color:#405a52;font-size:13px;line-height:1.48}
+.health-day-columns li:before{content:"•";position:absolute;left:2px;color:var(--green);font-weight:900}
+.health-day-card>button{width:100%;min-height:44px;border:0;border-top:1px solid var(--line);background:#f7faf5;color:var(--green);font-size:11px;font-weight:900;cursor:pointer}
+.health-day-card>button:hover{background:var(--lime);color:var(--deep)}
+.health-note{display:flex;align-items:center;gap:16px;margin-top:25px;padding:20px 23px;border-radius:9px;background:var(--deep);color:white}
+.health-note>span{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:50%;background:var(--lime);color:var(--deep);font-size:21px}
+.health-note p{margin:0;color:#d9e7e2;font-size:14px;line-height:1.65}
+.health-note b{color:white}
+.itinerary-health{display:grid;grid-template-columns:minmax(250px,.8fr) minmax(0,1.2fr) auto;align-items:center;gap:24px;padding:22px 28px;border-bottom:1px solid #b8d2c7;background:linear-gradient(100deg,#e8f4ee,#fff8e8)}
+.itinerary-health-title{display:flex;align-items:center;gap:13px}
+.itinerary-health-title>span{width:45px;height:45px;flex:0 0 45px;display:grid;place-items:center;border-radius:50%;background:var(--deep);color:var(--lime);font-size:20px}
+.itinerary-health small{display:block;color:var(--green);font-size:9px;font-weight:900;letter-spacing:.1em}
+.itinerary-health h3{margin:4px 0 0;font-family:Georgia,serif;font-size:24px;font-weight:400;color:var(--deep)}
+.itinerary-health strong{display:block;margin-top:5px;color:var(--deep);font-size:14px}
+.itinerary-health p{margin:5px 0 0;color:#456159;font-size:12px;line-height:1.55}
+.itinerary-health>button{min-height:43px;padding:0 14px;border:1px solid var(--deep);border-radius:4px;background:var(--deep);color:white;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap}
+.itinerary-health>button:hover{background:var(--lime);border-color:var(--lime);color:var(--deep)}
+.health-modal-panel{width:min(96vw,1120px);height:min(96dvh,1180px)}
+
+@media(max-width:1000px){
+  .health-principles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .health-graphic-card{grid-template-columns:155px 1fr}
+  .health-day-grid{grid-template-columns:1fr}
+  .itinerary-health{grid-template-columns:1fr 1fr}
+  .itinerary-health>button{grid-column:1/-1}
+  .mobile-nav{grid-template-columns:repeat(7,1fr)}
+}
+
+@media(max-width:700px){
+  .health-principles{grid-template-columns:1fr;gap:8px;margin-top:28px}
+  .health-graphic-grid{grid-template-columns:1fr;margin-bottom:30px}
+  .health-graphic-card{grid-template-columns:112px 1fr}
+  .health-graphic-media{aspect-ratio:auto;min-height:190px}
+  .health-graphic-copy{padding:17px 15px}
+  .health-graphic-copy strong{font-size:22px}
+  .health-graphic-copy em{font-size:13px}
+  .health-day-columns{grid-template-columns:1fr}
+  .health-day-columns>section{border-right:0;border-bottom:1px solid var(--line)}
+  .health-day-columns>section:last-child{border-bottom:0}
+  .health-day-columns li{font-size:15px}
+  .health-note{align-items:flex-start;padding:19px 17px}
+  .health-note p{font-size:15px}
+  .itinerary-health{grid-template-columns:1fr;padding:20px}
+  .itinerary-health>button{grid-column:auto;width:100%}
+  .itinerary-health p{font-size:15px}
+  .mobile-nav{grid-template-columns:repeat(7,1fr)}
+  .mobile-nav button{font-size:8px}
+  .mobile-nav button span{font-size:17px}
+}
