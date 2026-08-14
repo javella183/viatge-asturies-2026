@@ -1301,7 +1301,8 @@ export default function Home() {
         <div className="infographic-modal-panel" onClick={(event) => event.stopPropagation()}>
           <header className="infographic-modal-header"><div><small>DIA {openInfographic.day} · {openInfographic.date}</small><h2 id="infographic-modal-title">{openInfographic.title}</h2></div><button type="button" className="infographic-close" onClick={() => setOpenInfographicDay(null)} aria-label="Tancar la infografia">×</button></header>
           <div className="infographic-modal-media"><img src={openInfographic.image} alt={`Infografia completa del dia ${openInfographic.day}: ${openInfographic.title}`}/></div>
-          <nav className="infographic-modal-nav" aria-label="Canviar d’infografia"><button type="button" onClick={() => setOpenInfographicDay(openInfographic.day === 1 ? infographicItems.length : openInfographic.day - 1)}>← Dia anterior</button><span>{openInfographic.day} / {infographicItems.length}</span><button type="button" onClick={() => setOpenInfographicDay(openInfographic.day === infographicItems.length ? 1 : openInfographic.day + 1)}>Dia següent →</button></nav>
+          <p className="infographic-rotate-hint" aria-hidden="true">↻ Gira el mòbil en horitzontal per veure-la a pantalla completa</p>
+          <nav className="infographic-modal-nav" aria-label="Canviar d’infografia"><button type="button" onClick={() => setOpenInfographicDay(openInfographic.day === 1 ? infographicItems.length : openInfographic.day - 1)} aria-label="Obrir la infografia del dia anterior">← <span className="nav-long-label">Dia anterior</span></button><span>{openInfographic.day} / {infographicItems.length}</span><button type="button" onClick={() => setOpenInfographicDay(openInfographic.day === infographicItems.length ? 1 : openInfographic.day + 1)} aria-label="Obrir la infografia del dia següent"><span className="nav-long-label">Dia següent</span> →</button></nav>
         </div>
       </div>}
 
@@ -1309,6 +1310,7 @@ export default function Home() {
         <div className="infographic-modal-panel health-modal-panel" onClick={(event) => event.stopPropagation()}>
           <header className="infographic-modal-header"><div><small>DIETA I EXERCICI · VIATGE 2026</small><h2 id="health-modal-title">{selectedHealthGraphic.title}</h2></div><button type="button" className="infographic-close" onClick={() => setOpenHealthGraphic(null)} aria-label="Tancar la infografia">×</button></header>
           <div className="infographic-modal-media"><img src={selectedHealthGraphic.image} alt={`Infografia completa: ${selectedHealthGraphic.title}`}/></div>
+          <p className="infographic-rotate-hint health-scroll-hint" aria-hidden="true">↕ Desplaça per veure tota la làmina · amplia amb dos dits</p>
           <nav className="infographic-modal-nav" aria-label="Canviar d’infografia"><button type="button" onClick={() => setOpenHealthGraphic(selectedHealthGraphic.key === "dieta" ? "exercici" : "dieta")}>← Canviar làmina</button><span>{selectedHealthGraphic.key === "dieta" ? "Dieta" : "Exercici"}</span><button type="button" onClick={() => setOpenHealthGraphic(selectedHealthGraphic.key === "dieta" ? "exercici" : "dieta")}>Següent →</button></nav>
         </div>
       </div>}
