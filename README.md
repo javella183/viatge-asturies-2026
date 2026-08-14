@@ -18,7 +18,7 @@ Des de la secció **Control** es pot:
 - restaurar les dades en un altre navegador;
 - exportar les despeses a CSV.
 
-Cada despesa permet indicar efectiu, targeta de dèbit o targeta de crèdit, seleccionar si paga Josep o Caty i adjuntar opcionalment una foto del tiquet. Els tiquets també entren en la còpia de seguretat.
+Cada despesa permet indicar efectiu, targeta de dèbit o targeta de crèdit, seleccionar si paga Josep o Cati i adjuntar opcionalment una foto del tiquet. Els tiquets també entren en la còpia de seguretat.
 
 La compra està organitzada per supermercat, amb productes afegibles manualment, marcador de cistella i text ratllat quan el producte ja està dins. Les fitxes dels llocs emblemàtics inclouen un aparcament pròxim, enllaç directe i cost orientatiu.
 

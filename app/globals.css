@@ -4,6 +4,57 @@
 @media(max-width:600px){body{padding-bottom:67px}.topbar{height:61px;padding:0 18px}.brand{font-size:11px}.brand-mark{width:30px;height:30px}.hero{min-height:auto;padding:70px 20px 55px;gap:45px}.hero h1{font-size:55px}.hero-lead{font-size:15px}.trip-card{padding:24px}.quick-strip{grid-template-columns:1fr 1fr}.quick-strip>div{padding:11px 14px;gap:8px}.quick-strip>div>span{display:none}.quick-strip strong{font-size:10px}.section{padding:68px 18px}.section-heading{display:block}.section-heading>p{font-size:12px}.route-rail{margin-top:35px}.planner{padding-top:20px}.tabbar{top:61px;margin-bottom:25px}.tabbar button{padding:11px 13px}.filter-row{display:block}.filters{margin-top:20px;overflow:auto}.filter-row h2{font-size:38px}.day-grid{grid-template-columns:1fr 1fr;gap:8px}.day-card{padding:14px;min-height:190px}.day-card h3{font-size:19px}.day-card p{font-size:10px}.day-stats{display:block}.day-stats span{display:block;margin-top:5px}.detail-head{padding:24px 20px;display:grid;grid-template-columns:50px 1fr}.detail-number{font-size:50px}.detail-head h2{font-size:30px}.map-button{grid-column:1/-1;margin:4px 0 0;text-align:center}.detail-facts div{padding:15px 10px}.detail-facts strong{font-size:14px}.detail-columns{padding:30px 20px;gap:25px}.day-switch{padding:15px 20px}.simple-panel{padding:30px 20px}.panel-intro h2{font-size:40px}.shopping-list article{grid-template-columns:46px 1fr}.shopping-index{font-size:25px}.allergy-note{grid-template-columns:1fr}.reservation-table{overflow:auto}.table-row{grid-template-columns:minmax(190px,1.7fr) 110px 80px;min-width:430px}.contact-card{align-items:flex-start;gap:20px;flex-direction:column}.budget-hero{padding:28px 22px}.budget-hero strong{font-size:36px}.budget-ring{width:100px;height:100px;border-width:12px}.budget-ring span{font-size:18px}.base-banner{padding:60px 20px;display:block}.base-banner h2{font-size:42px}.base-banner a{display:inline-block;margin-top:18px}footer{display:block;text-align:center}footer .brand{justify-content:center}footer p{margin:18px 0}.mobile-nav{position:fixed;z-index:60;bottom:0;left:0;right:0;height:67px;background:rgba(255,253,248,.96);backdrop-filter:blur(15px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom)}.mobile-nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:8px;font-weight:800;color:var(--muted)}.mobile-nav button span{font-size:17px}.mobile-nav button.active{color:var(--green)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
+/* Actualització global 14/08: itinerari ampliat i bitllets privats */
+.ticket-panel{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:28px;padding:24px 30px;background:#e9f7f3;border-bottom:1px solid #b9d7ce}
+.ticket-panel>div:first-child>span{display:block;color:var(--green);font-size:10px;font-weight:900;letter-spacing:.13em}
+.ticket-panel h3{font-family:Georgia,serif;font-size:27px;font-weight:400;margin:7px 0}
+.ticket-panel p{max-width:780px;color:#45635a;font-size:13px;line-height:1.65;margin:0}
+.ticket-email-note{display:flex;max-width:350px;flex-direction:column;gap:5px;padding:15px 17px;border:1px solid #8bb4a7;border-radius:7px;background:white;color:var(--green)}
+.ticket-email-note small{font-size:10px;font-weight:900;letter-spacing:.12em}
+.ticket-email-note strong{font-size:14px}
+.ticket-email-note span{color:#45635a;font-size:12px;line-height:1.5}
+.reservation-private-note{margin:12px 0 0;padding:10px 12px;border-radius:5px;background:#e9f7f3;color:#31564d;font-size:12px;line-height:1.5}
+.reservation-actions button{border:1px solid #8bb4a7;border-radius:5px;background:white;color:var(--green);padding:11px 13px;font:inherit;font-size:12px;font-weight:900;cursor:pointer}
+.day-highlights{padding:34px 40px;border-bottom:1px solid var(--line);background:#fffdf8}
+.highlights-heading{display:grid;grid-template-columns:160px minmax(0,1fr);gap:2px 28px;align-items:end;margin-bottom:20px}
+.highlights-heading .kicker{grid-row:1/3;align-self:center}
+.highlights-heading h3{font-family:Georgia,serif;font-size:29px;font-weight:400;margin:0}
+.highlights-heading>p:last-child{font-size:13px;line-height:1.6;color:var(--muted);margin:5px 0 0}
+.highlights-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.highlights-grid article{display:grid;grid-template-rows:150px 1fr;overflow:hidden;border:1px solid var(--line);border-radius:7px;background:white}
+.highlights-grid img{width:100%;height:100%;object-fit:cover}
+.highlights-grid article>div{padding:16px;display:flex;flex-direction:column}
+.highlights-grid small{color:var(--green);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+.highlights-grid h4{font-family:Georgia,serif;font-size:21px;font-weight:400;margin:7px 0}
+.highlights-grid p{font-size:13px;line-height:1.58;color:var(--muted);margin:0 0 14px}
+.highlights-grid article>div>div{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
+.highlights-grid a{padding:8px 9px;border-radius:4px;background:#edf4ef;color:var(--green);font-size:11px;font-weight:900}
+.status.walkin{background:#e7efff;color:#365f9a}
+
+@media(max-width:900px){
+  .highlights-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:600px){
+  .ticket-panel{grid-template-columns:1fr;padding:22px 20px;gap:18px}
+  .ticket-panel h3{font-size:24px}
+  .ticket-panel p{font-size:15px}
+  .ticket-email-note{max-width:none}
+  .ticket-email-note strong{font-size:15px}
+  .ticket-email-note span,.reservation-private-note{font-size:14px}
+  .reservation-actions button{font-size:14px;padding:12px}
+  .day-highlights{padding:28px 20px}
+  .highlights-heading{display:block}
+  .highlights-heading h3{font-size:27px;margin-top:5px}
+  .highlights-heading>p:last-child{font-size:15px}
+  .highlights-grid{grid-template-columns:1fr}
+  .highlights-grid article{grid-template-rows:180px 1fr}
+  .highlights-grid small{font-size:11px}
+  .highlights-grid h4{font-size:23px}
+  .highlights-grid p{font-size:15px}
+  .highlights-grid a{font-size:13px}
+}
+
 /* Guia operativa v2 */
 .quick-strip>a,.quick-strip>div,.quick-strip>button{display:flex;align-items:center;gap:14px;padding:8px 24px;border:0;border-right:1px solid var(--line);background:transparent;text-align:left;color:inherit;cursor:pointer}
 .quick-strip>a:last-child,.quick-strip>div:last-child,.quick-strip>button:last-child{border-right:0}

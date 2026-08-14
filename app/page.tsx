@@ -46,7 +46,7 @@ const STORAGE = {
   customTasks: "asturies-custom-tasks-v1",
   taskLabels: "asturies-task-labels-v1",
   shopping: "asturies-shopping-v1",
-  shoppingSchema: "asturies-shopping-schema-v3",
+  shoppingSchema: "asturies-shopping-schema-v4",
 };
 
 const categories = [
@@ -55,10 +55,11 @@ const categories = [
 ];
 
 const paymentMethods = ["Per indicar", "Efectiu", "Targeta de dèbit", "Targeta de crèdit"];
-const payers = ["Per indicar", "Josep", "Caty"];
+const payers = ["Per indicar", "Josep", "Cati"];
 const homeFoodGroup = "Menjar per a agafar de casa";
-const shoppingGroups = [homeFoodGroup, "Alimerka Avilés", "Alimerka El Prestín", "Desdejunis", "Pícnics", "Sopars", "Altres"];
-const shopGroupById: Record<string, string> = { xalo: homeFoodGroup, aviles: "Alimerka Avilés", prestin: "Alimerka El Prestín" };
+const restockGroup = "Reposició Alimerka Avilés";
+const shoppingGroups = [homeFoodGroup, "Alimerka Avilés", restockGroup, "Desdejunis", "Pícnics", "Sopars", "Altres"];
+const shopGroupById: Record<string, string> = { xalo: homeFoodGroup, aviles: "Alimerka Avilés", prestin: restockGroup };
 
 const initialExpenses: Expense[] = [
   { id: "allotjament-el-casal", day: 1, concept: "Apartamentos El Casal", category: "Allotjament", amount: 725, note: "7 nits", paymentMethod: "Per indicar", paidBy: "Per indicar", createdAt: "2026-08-09T12:00:00.000Z" },
@@ -81,6 +82,13 @@ const initialShopping: ShoppingItem[] = [
   { id: "shop-pollastre", label: "Pit de pollastre i altra carn", quantity: "2 menjars", group: "Sopars", checked: false },
   { id: "shop-pasta", label: "Pasta i tonyina", quantity: "per a pícnic", group: "Pícnics", checked: false },
   { id: "shop-aigua", label: "Aigua", quantity: "garrafes i botelles", group: "Alimerka Avilés", checked: false },
+  { id: "shop-salmo", label: "Salmó", quantity: "4 racions · sopar Dia 3", group: "Alimerka Avilés", checked: false },
+  { id: "shop-brocoli", label: "Bròcoli", quantity: "2 peces o bosses · sopar Dia 3", group: "Alimerka Avilés", checked: false },
+  { id: "shop-fideus", label: "Fideus i caldo de pollastre", quantity: "sopar dels xiquets", group: "Alimerka Avilés", checked: false },
+  { id: "shop-cogombre", label: "Cogombre", quantity: "2 unitats", group: "Alimerka Avilés", checked: false },
+  { id: "shop-formatge-fresc", label: "Formatge fresc", quantity: "ensalada completa Dia 7", group: restockGroup, checked: false },
+  { id: "shop-llom", label: "Llom", quantity: "entrepans i sopar dels Lagos", group: restockGroup, checked: false },
+  { id: "shop-pa-reposicio", label: "Pa, pernil salat, pavo i anxoves", quantity: "pícnic dels Lagos", group: restockGroup, checked: false },
 ];
 
 const taskById = Object.fromEntries(tasks.map((task) => [task.id, task]));
@@ -94,13 +102,13 @@ const checklistGroups = [
 ] as const;
 
 const reservationRows = [
-  { taskId: "casal-arribada", contactId: "casal", title: "El Casal · avisar arribada", date: "16/08 · cap a les 19:00", cost: "725 € confirmats" },
-  { taskId: "yumay", contactId: "yumay", title: "Sidreria Yumay", date: "17/08 · 14:00", cost: "45–60 €" },
-  { taskId: "muja", contactId: "muja", title: "Invitacions MUJA", date: "19/08 · matí", cost: "Gratuït dimecres" },
-  { taskId: "cafetin", contactId: "cafetin", title: "El Cafetín", date: "19/08 · 14:15", cost: "Per confirmar" },
-  { taskId: "lagos", contactId: "lagos", title: "Bus Lagos des de P1", date: "20/08 · 08:30–09:00", cost: "25 € + 3 € P1" },
-  { taskId: "puerto", contactId: "puerto", title: "Restaurant El Puerto", date: "21/08 · 20:00", cost: "55–70 €" },
-  { taskId: "piguena", contactId: "piguena", title: "El Pigüeña", date: "22/08 · 13:45", cost: "48–60 €" },
+  { taskId: "casal-arribada", contactId: "casal", title: "El Casal · allotjament", date: "16–23/08 · avisar arribada", cost: "725 €", state: "confirmed" },
+  { taskId: "yumay", contactId: "yumay", title: "Mesón de Furacu", date: "17/08 · 14:00 · 4 persones", cost: "Confirmat", state: "confirmed" },
+  { taskId: "muja", contactId: "muja", title: "Invitacions MUJA", date: "19/08 · matí", cost: "Gratuït dimecres", state: "pending" },
+  { taskId: "cafetin", contactId: "cafetin", title: "El Cafetín", date: "19/08 · 14:15", cost: "Per confirmar", state: "pending" },
+  { taskId: "puerto", contactId: "puerto", title: "La Amistad · terrassa", date: "20/08 · estar a les 19:45", cost: "Sense reserva", state: "walkin" },
+  { taskId: "lagos", contactId: "lagos", title: "Bus Lagos des de P1", date: "21/08 · 12:00 / 16:50", cost: "25,50 € · comprat", state: "confirmed" },
+  { taskId: "piguena", contactId: "piguena", title: "El Pigüeña", date: "22/08 · 13:45", cost: "48–60 €", state: "pending" },
 ];
 
 type RestaurantAlternative = {
@@ -116,12 +124,10 @@ const restaurantIds = new Set(["yumay", "cafetin", "puerto", "piguena", "chigre"
 
 const restaurantAlternatives: Record<string, RestaurantAlternative> = {
   yumay: {
-    name: "Casa Tataguyo",
-    detail: "Plaça del Carbayedo, 6 · Avilés",
-    phone: "+34985564815",
-    phoneLabel: "985 564 815",
-    map: maps("Casa Tataguyo Avilés"),
-    reviews: maps("Casa Tataguyo Avilés ressenyes"),
+    name: "La Viñuca",
+    detail: "Avilés · alternativa només si hi haguera una incidència amb la reserva",
+    map: maps("La Viñuca Avilés"),
+    reviews: maps("La Viñuca Avilés ressenyes"),
   },
   cafetin: {
     name: "El Barrigón de Bertín",
@@ -132,12 +138,12 @@ const restaurantAlternatives: Record<string, RestaurantAlternative> = {
     reviews: maps("El Barrigón de Bertín Lastres ressenyes"),
   },
   puerto: {
-    name: "Sidrería Bar Matute",
-    detail: "C. Marqués de Canillejas, 4 · Llanes",
-    phone: "+34985401896",
-    phoneLabel: "985 401 896",
-    map: maps("Sidrería Bar Matute Llanes"),
-    reviews: maps("Sidrería Bar Matute Llanes ressenyes"),
+    name: "Sidrería Restaurant El Puerto",
+    detail: "C. Marqués de Canillejas, 1 · Llanes · alternativa si La Amistad està completa",
+    phone: "+34684610679",
+    phoneLabel: "684 610 679",
+    map: maps("Sidrería Restaurante El Puerto Llanes"),
+    reviews: maps("Sidrería Restaurante El Puerto Llanes ressenyes"),
   },
   piguena: {
     name: "Sidrería La Manzana",
@@ -151,26 +157,26 @@ const restaurantAlternatives: Record<string, RestaurantAlternative> = {
 
 const foodStopsByTitle: Record<string, { reviews: string; alternativeId?: string }> = {
   "Desdejuni · Cafestore Albacete": { reviews: maps("Cafestore Albacete A-31 ressenyes") },
-  "Dinar · Sidreria Yumay": { reviews: maps("Sidrería Yumay Avilés ressenyes"), alternativeId: "yumay" },
+  "Dinar · Mesón de Furacu": { reviews: maps("Mesón de Furacu ressenyes"), alternativeId: "yumay" },
   "Dinar · El Cafetín": { reviews: maps("Restaurante El Cafetín Lastres ressenyes"), alternativeId: "cafetin" },
-  "Sopar · El Puerto": { reviews: maps("Sidrería Restaurante El Puerto Llanes ressenyes"), alternativeId: "puerto" },
+  "Sopar · La Amistad": { reviews: maps("Bar Sidrería La Amistad Llanes ressenyes"), alternativeId: "puerto" },
   "Dinar · El Pigüeña": { reviews: maps("Sidrería El Pigüeña Oviedo ressenyes"), alternativeId: "piguena" },
   "Honrubia · Moya": { reviews: maps("Hotel Restaurante Moya Honrubia ressenyes") },
 };
 
 type Forecast = { icon: string; temp: string; summary: string };
 
-// Previsió orientativa consultada el 9 d'agost de 2026. Es manté separada de
+// Previsió orientativa consultada el 14 d'agost de 2026. Es manté separada de
 // les decisions d'oratge del pla perquè siga molt fàcil actualitzar-la abans d'eixir.
 const forecastByDay: Record<number, Forecast> = {
-  1: { icon: "🌦️", temp: "24° / 18°", summary: "Pluja i possible tronada a l'arribada" },
-  2: { icon: "🌦️", temp: "24° / 18°", summary: "Ruixats de matí i clarianes després" },
-  3: { icon: "☀️", temp: "25° / 19°", summary: "Majoritàriament assolellat i humit" },
-  4: { icon: "⛅", temp: "25° / 17°", summary: "Sol i núvols, ambient humit" },
-  5: { icon: "⛈️", temp: "25° / 18°", summary: "Possible tronada matinal i cel cobert" },
-  6: { icon: "🌧️", temp: "24° / 18°", summary: "Núvols i pluja ocasional" },
-  7: { icon: "⛅", temp: "23° / 13°", summary: "Intervals de núvols i sol" },
-  8: { icon: "🌦️", temp: "30° / 18°", summary: "Calor al centre i possible ruixat de vesprada" },
+  1: { icon: "⛈️", temp: "24° / 19°", summary: "Molt nuvolós, pluja ocasional i possible tronada a l’arribada" },
+  2: { icon: "☁️", temp: "25° / 18°", summary: "Molt nuvolós i humit; jornada urbana viable" },
+  3: { icon: "⛅", temp: "26° / 19°", summary: "Núvols i clarianes: millor dia per a la costa occidental" },
+  4: { icon: "🌦️", temp: "25° / 20°", summary: "Plugim de matí i cel principalment cobert" },
+  5: { icon: "⛈️", temp: "23° / 18°", summary: "Tronades i pluja possibles; platja condicionada a radar i bandera" },
+  6: { icon: "☁️", temp: "23° / 19°", summary: "Majoritàriament nuvolós: millor finestra actual per als Lagos" },
+  7: { icon: "🌦️", temp: "24° / 15°", summary: "Ruixats de matí i molts núvols; Oviedo és el pla més flexible" },
+  8: { icon: "🌦️", temp: "29° / 16°", summary: "Pluja possible a l’eixida i més calor conforme avance la tornada" },
 };
 
 type VisitDetails = {
@@ -193,9 +199,9 @@ const routeMapStops = [
   { day: 2, label: "Avilés" },
   { day: 3, label: "Cudillero · Cap Vidio" },
   { day: 4, label: "MUJA · Llastres · Tazones" },
-  { day: 5, label: "Covadonga · Llanes" },
-  { day: 6, label: "Oviedo · Naranco" },
-  { day: 7, label: "Salinas · Platja del Silenci" },
+  { day: 5, label: "Ribadesella · Cuevas del Mar · Llanes" },
+  { day: 6, label: "Lagos · Covadonga · Cangas" },
+  { day: 7, label: "Oviedo · Naranco" },
   { day: 8, label: "Astúries · Xaló" },
 ];
 
@@ -329,11 +335,11 @@ const parkingByTitle: Record<string, ParkingDetails> = {
 
 const photoMissionByTitle: Record<string, PhotoMission> = {
   "Passeig mudèjar": { people: "Tota la família", prompt: "Una primera foto de viatge entre els porxos de la plaça de la Villa." },
-  "Centro Niemeyer": { people: "Josep i Caty", prompt: "Una foto de parella amb les formes blanques del Niemeyer al fons." },
+  "Centro Niemeyer": { people: "Josep i Cati", prompt: "Una foto de parella amb les formes blanques del Niemeyer al fons." },
   "Avilés històric · 2,5–3 km": { people: "Cesc", prompt: "Cesc baix dels porxos de Galiana, com si explorara la ciutat." },
   "Salinas + Museu de les Àncores": { people: "Cesc i Lluís", prompt: "Els germans junts amb la mar o una àncora al fons." },
   "Cudillero · passeig curt": { people: "Tota la família", prompt: "La foto familiar imprescindible amb l’amfiteatre de cases de colors." },
-  "Cap Vidio": { people: "Josep i Caty", prompt: "Una foto de parella amb el far, mantenint una distància segura del penya-segat." },
+  "Cap Vidio": { people: "Josep i Cati", prompt: "Una foto de parella amb el far, mantenint una distància segura del penya-segat." },
   "Platja de San Pedro": { people: "Cesc i Lluís", prompt: "Una foto espontània dels dos germans jugant a la platja." },
   "Platja del Silenci · opcional": { people: "Lluís", prompt: "Lluís davant de la panoràmica de la cala des del mirador." },
   "MUJA": { people: "Cesc", prompt: "Cesc davant de l’edifici amb forma de petjada de dinosaure." },
@@ -342,11 +348,11 @@ const photoMissionByTitle: Record<string, PhotoMission> = {
   "Tazones": { people: "Cesc i Lluís", prompt: "Els germans al port o buscant la Casa de les Conquilles." },
   "Buferrera": { people: "Lluís", prompt: "Lluís com a explorador entre el paisatge de l’antiga mina." },
   "Ruta curta familiar": { people: "Tota la família", prompt: "La gran foto del viatge amb un dels llacs de Covadonga al fons." },
-  "Covadonga": { people: "Josep i Caty", prompt: "Una foto de parella davant de la basílica o la Santa Cova." },
+  "Covadonga": { people: "Josep i Cati", prompt: "Una foto de parella davant de la basílica o la Santa Cova." },
   "Cangas de Onís": { people: "Cesc i Lluís", prompt: "Els germans junts amb el pont i la creu al fons." },
   "Cuevas del Mar": { people: "Cesc", prompt: "Cesc descobrint un dels arcs de roca, sempre en una zona segura." },
   "Ribadesella · 2,5–3 km": { people: "Tota la família", prompt: "Una foto familiar al passeig amb la desembocadura del Sella." },
-  "Llanes": { people: "Josep i Caty", prompt: "Una foto de parella al port o davant dels Cubos de la Memoria." },
+  "Llanes": { people: "Josep i Cati", prompt: "Una foto de parella al port o davant dels Cubos de la Memoria." },
   "Santa María + San Miguel": { people: "Tota la família", prompt: "Una foto familiar davant de Santa María del Naranco." },
   "Centre històric": { people: "Lluís", prompt: "Lluís davant de la catedral o amb una de les escultures d’Oviedo." },
   "Oviedo a peu": { people: "Cesc i Lluís", prompt: "Una foto divertida dels germans al Fontán o amb Mafalda." },
@@ -490,10 +496,14 @@ export default function Home() {
             label: item.label.replace(/pernil serrà/gi, "Pernil salat").replace(/titot/gi, "pavo"),
             group: item.group === "Compra principal" ? "Alimerka Avilés" : item.group === "Des de Xaló" ? homeFoodGroup : item.group,
           }));
-        if (localStorage.getItem(STORAGE.shoppingSchema) !== "3") {
+        if (localStorage.getItem(STORAGE.shoppingSchema) !== "4") {
+          migratedShopping = migratedShopping.map((item: ShoppingItem) => ({
+            ...item,
+            group: item.group === "Alimerka El Prestín" ? restockGroup : item.group,
+          }));
           const existingIds = new Set(migratedShopping.map((item: ShoppingItem) => item.id));
           migratedShopping = [...migratedShopping, ...initialShopping.filter((item) => !existingIds.has(item.id))];
-          localStorage.setItem(STORAGE.shoppingSchema, "3");
+          localStorage.setItem(STORAGE.shoppingSchema, "4");
         }
         setShoppingItems(migratedShopping);
       } catch { setShoppingItems(initialShopping); }
@@ -654,7 +664,7 @@ export default function Home() {
     const amount = Number(amountText.replace(",", "."));
     if (!Number.isFinite(amount) || amount <= 0) return;
     const paymentMethod = window.prompt("Forma de pagament: Efectiu, Targeta de dèbit o Targeta de crèdit", expense.paymentMethod) || expense.paymentMethod;
-    const paidBy = window.prompt("Qui ha pagat: Josep o Caty", expense.paidBy) || expense.paidBy;
+    const paidBy = window.prompt("Qui ha pagat: Josep o Cati", expense.paidBy) || expense.paidBy;
     setExpenses((current) => current.map((item) => item.id === expense.id ? { ...item, concept, amount, paymentMethod, paidBy } : item));
   };
 
@@ -713,7 +723,7 @@ export default function Home() {
 
   const filteredDays = useMemo(() => filter === "tots" ? days : days.filter((day) => day.kind === filter), [filter]);
   const selected = days.find((day) => day.id === activeDay) ?? days[0];
-  const completedReservations = reservationRows.filter((row) => checked[row.taskId]).length;
+  const completedReservations = reservationRows.filter((row) => row.state === "confirmed" || checked[row.taskId]).length;
   const completedTasks = [...tasks, ...customTasks].filter((task) => checked[task.id]).length;
   const allTaskCount = tasks.length + customTasks.length;
   const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -729,6 +739,10 @@ export default function Home() {
   const totalMissionCount = days.reduce((total, day) => total + day.schedule.filter((item) => photoMissionByTitle[item.title]).length, 0);
   const photoMegabytes = photoMemories.reduce((total, memory) => total + memory.blob.size, 0) / 1024 / 1024;
   const receiptMegabytes = receipts.reduce((total, receipt) => total + receipt.blob.size, 0) / 1024 / 1024;
+  const selectedHighlights = selected.schedule
+    .filter((item) => Boolean(visitDetailsByTitle[item.title]))
+    .map((item) => ({ item, visit: visitDetailsByTitle[item.title], parking: parkingByTitle[item.title] }))
+    .slice(0, 5);
 
   const download = (filename: string, content: string, type: string) => {
     const url = URL.createObjectURL(new Blob([content], { type }));
@@ -743,7 +757,7 @@ export default function Home() {
     try {
       const photos = await Promise.all(photoMemories.map(async ({ url: _url, blob, ...memory }) => ({ ...memory, dataUrl: await blobToDataUrl(blob) })));
       const savedReceipts = await Promise.all(receipts.map(async ({ url: _url, blob, ...receipt }) => ({ ...receipt, dataUrl: await blobToDataUrl(blob) })));
-      download("asturies-2026-copia-amb-fotos.json", JSON.stringify({ version: 3, savedAt: new Date().toISOString(), checked, expenses, budgetTotal, customTasks, taskLabels, shoppingItems, photos, receipts: savedReceipts }, null, 2), "application/json");
+      download("asturies-2026-copia-amb-fotos.json", JSON.stringify({ version: 4, savedAt: new Date().toISOString(), checked, expenses, budgetTotal, customTasks, taskLabels, shoppingItems, photos, receipts: savedReceipts }, null, 2), "application/json");
     } catch { window.alert("No s’ha pogut preparar la còpia amb les fotografies."); }
   };
 
@@ -838,13 +852,13 @@ export default function Home() {
           <h1 className="family-title"><span>Els</span><em>Avellà-Ferrer</em><span>en Astúries</span></h1>
           <p className="hero-season">(estiu 2026)</p>
           <p className="hero-lead">Tot el viatge al mòbil: horaris, rutes, restaurants, compres, llistes i despeses guardades automàticament en este dispositiu.</p>
-          <div className="hero-actions"><button className="primary" onClick={() => jump("itinerari")}>Començar la guia <span>↓</span></button><button className="secondary" onClick={() => jump("reserves")}>{reservationRows.length - completedReservations} reserves pendents ↗</button></div>
+          <div className="hero-actions"><button className="primary" onClick={() => jump("itinerari")}>Començar la guia <span>↓</span></button><button className="secondary" onClick={() => jump("reserves")}>{reservationRows.length - completedReservations} gestions pendents ↗</button></div>
         </div>
         <div className="hero-visual">
           <div className="hero-family">
             <span className="family-monogram" aria-hidden="true">AF</span>
-            <img className="family-portrait" src={familyCutout} alt="Josep, Caty, Lluís i Cesc, la família Avellà-Ferrer"/>
-            <div className="family-nameplate"><b>La nostra aventura</b><span>Josep · Caty · Lluís · Cesc</span></div>
+            <img className="family-portrait" src={familyCutout} alt="Josep, Cati, Lluís i Cesc, la família Avellà-Ferrer"/>
+            <div className="family-nameplate"><b>La nostra aventura</b><span>Josep · Cati · Lluís · Cesc</span></div>
           </div>
         </div>
         <aside className="trip-card">
@@ -879,7 +893,7 @@ export default function Home() {
         </div>
         <div className="lodging-grid">
           <article className="lodging-card confirmed"><span>✓ CONFIRMAT EN LA FITXA OFICIAL</span><h3>Què trobarem</h3><ul><li>Cuina amb menatge complet</li><li>Rentadora i rentavaixella</li><li>Roba de llit, calefacció i televisió</li><li>Wifi i accés a internet</li><li>Piscina, jardí, barbacoa i mobles d’exterior</li><li>Parc infantil, futbolí i jocs</li><li>Aparcament en l’allotjament</li><li>Possibilitat de bressol, que convé sol·licitar abans</li></ul></article>
-          <article className="lodging-card layout-card"><span>⌂ DISTRIBUCIÓ</span><h3>Quin apartament tenim?</h3><p><b>Trasgu</b> té una habitació amb dos llits de 105 cm, sofà llit doble, bany gran, terrassa privada i solàrium.</p><p><b>Xana i Cuélebre</b> són lofts oberts amb dos llits de 105 cm i sofà llit doble; poden comunicar-se entre si.</p><p className="lodging-note">La fitxa que ens has passat no identifica clarament la unitat reservada. Cal confirmar el nom de l’apartament i la distribució exacta per a Josep, Caty, Lluís i Cesc.</p></article>
+          <article className="lodging-card layout-card"><span>⌂ DISTRIBUCIÓ</span><h3>Quin apartament tenim?</h3><p><b>Trasgu</b> té una habitació amb dos llits de 105 cm, sofà llit doble, bany gran, terrassa privada i solàrium.</p><p><b>Xana i Cuélebre</b> són lofts oberts amb dos llits de 105 cm i sofà llit doble; poden comunicar-se entre si.</p><p className="lodging-note">La fitxa que ens has passat no identifica clarament la unitat reservada. Cal confirmar el nom de l’apartament i la distribució exacta per a Josep, Cati, Lluís i Cesc.</p></article>
           <article className="lodging-card pending-card"><span>? ENCARA PER CONFIRMAR</span><h3>Què hem de preguntar</h3><ul><li>Tipus de cafetera i si necessita càpsules o filtres</li><li>Si hi ha oli, sal i productes bàsics de cuina</li><li>Tovalloles de bany i tovalloles específiques de piscina</li><li>Gel, xampú, paper higiènic i productes de neteja</li><li>Mida del frigorífic i espai real de congelador</li><li>Horari i dates d’obertura de la piscina</li><li>Ús de la barbacoa i si cal portar carbó</li><li>Hora d’entrada, entrega de claus i hora d’eixida</li></ul><TaskCheck id="casal-cuina" label={taskLabels["casal-cuina"]} checked={!!checked["casal-cuina"]} onToggle={toggleTask} compact/></article>
         </div>
         <div className="lodging-practical"><span>ⓘ</span><p><b>Important per a la família:</b> és un allotjament rural i no un nucli comercial; per això convé arribar amb el sopar del primer dia i els desdejunis inicials. El transport públic figura a menys de 500 m, però per a la compra i les excursions continuarem depenent del Tiguan. Amb Cesc, supervisió constant en la piscina i les zones exteriors.</p></div>
@@ -897,13 +911,15 @@ export default function Home() {
 
         {tab === "itinerari" && <div className="tab-panel">
           <div className="filter-row"><div><p className="kicker">ITINERARI DETALLAT</p><h2>Tria la jornada</h2></div><div className="filters">{[['tots','Tots'],['costa','Costa'],['natura','Natura'],['ciutat','Ciutat'],['ruta','Carretera']].map(([key,label]) => <button key={key} onClick={() => setFilter(key)} className={filter === key ? "active" : ""}>{label}</button>)}</div></div>
-          <div className="forecast-notice"><span>◷</span><p><strong>Previsió orientativa consultada el 9 d’agost.</strong> La tornarem a actualitzar el dia abans d’eixir.</p></div>
+          <div className="forecast-notice"><span>◷</span><p><strong>Previsió actualitzada el 14 d’agost.</strong> Divendres 21 és ara la millor finestra per als Lagos; dijous 20 cal revisar radar i bandera abans de mantindre la platja.</p></div>
           <div className="day-grid">{filteredDays.map((day) => { const forecast = forecastByDay[day.id]; return <button key={day.id} className={`day-card ${day.color} ${activeDay === day.id ? "selected" : ""}`} onClick={() => chooseDay(day.id)}><div className="day-card-top"><span>DIA {day.id}</span><span className="weather-pill" title={forecast.summary}><b>{forecast.icon}</b><small>{forecast.temp}</small></span></div><small>{day.date}</small><h3>{day.title}</h3><p>{day.subtitle}</p><div className="day-weather-copy">{forecast.summary}</div><div className="day-stats"><span>{day.distance}</span><span>{day.budget}</span></div></button>; })}</div>
 
           <article className={`day-detail ${selected.color}`} id={`itinerari-dia-${selected.id}`}>
-            <div className="detail-head"><div className="detail-number">{String(selected.id).padStart(2,"0")}</div><div><p>{selected.date}</p><h2>{selected.title}</h2><span>{selected.subtitle}</span></div><div className="detail-weather" title={forecastByDay[selected.id].summary}><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ 09/08</small><strong>{forecastByDay[selected.id].temp}</strong></div></div><a href={selected.map} target="_blank" rel="noreferrer" className="map-button">Ruta completa en Maps ↗</a></div>
+            <div className="detail-head"><div className="detail-number">{String(selected.id).padStart(2,"0")}</div><div><p>{selected.date}</p><h2>{selected.title}</h2><span>{selected.subtitle}</span></div><div className="detail-weather" title={forecastByDay[selected.id].summary}><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ 14/08</small><strong>{forecastByDay[selected.id].temp}</strong></div></div><a href={selected.map} target="_blank" rel="noreferrer" className="map-button">Ruta completa en Maps ↗</a></div>
             <div className="detail-facts"><div><small>DISTÀNCIA</small><strong>{selected.distance}</strong></div><div><small>CONDUCCIÓ</small><strong>{selected.driving}</strong></div><div><small>PRESSUPOST</small><strong>{selected.budget}</strong></div></div>
-            <div className="day-brief"><div><small>OBJECTIU REAL DEL DIA</small><p>{selected.objective}</p></div><div className="weather-brief"><div className="weather-current"><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ ACTUAL · 09/08</small><strong>{forecastByDay[selected.id].temp}</strong><p>{forecastByDay[selected.id].summary}</p></div></div><p className="weather-advice"><b>Decisió del dia:</b> {selected.weather}</p></div></div>
+            <div className="day-brief"><div><small>OBJECTIU REAL DEL DIA</small><p>{selected.objective}</p></div><div className="weather-brief"><div className="weather-current"><span>{forecastByDay[selected.id].icon}</span><div><small>PREVISIÓ ACTUAL · 14/08</small><strong>{forecastByDay[selected.id].temp}</strong><p>{forecastByDay[selected.id].summary}</p></div></div><p className="weather-advice"><b>Decisió del dia:</b> {selected.weather}</p></div></div>
+            {selected.id === 6 && <section className="ticket-panel"><div><span>🎟️ BITLLETS COMPRATS</span><h3>P1 12:00 → Lagos · tornada 16:50</h3><p>Divendres 21 · 4 viatgers · 25,50 €. Presentar al mòbil; no cal imprimir. El PDF amb els codis i la documentació no està publicat en la web.</p></div><div className="ticket-email-note"><small>ON ESTÀ EL PDF</small><strong>Gmail · josepavella@gmail.com</strong><span>Correu «Gracias por comprar en Alsa» del 14/08/2026 · obrir l’adjunt des del mòbil.</span></div></section>}
+            {selectedHighlights.length > 0 && <section className="day-highlights"><div className="highlights-heading"><p className="kicker">QUÈ VEUREM</p><h3>Els punts que donen sentit al dia</h3><p>Una vista ràpida abans d’obrir l’horari: què és cada lloc, quant de temps li dedicarem i on convé aparcar.</p></div><div className="highlights-grid">{selectedHighlights.map(({ item, visit, parking }) => <article key={`${selected.id}-${item.title}`}><img src={visit.image} alt={visit.imageAlt} loading="lazy"/><div><small>{item.time} · {item.tag || "visita"}</small><h4>{item.title}</h4><p>{visit.description}</p><div>{item.map && <a href={item.map} target="_blank" rel="noreferrer">Ubicació ↗</a>}{parking && <a href={parking.map} target="_blank" rel="noreferrer">🅿 {parking.cost} ↗</a>}</div></div></article>)}</div></section>}
             <div className="detail-columns">
               <div className="timeline"><h3>Horari pas a pas</h3>{selected.schedule.map((item, index) => {
                 const visit = visitDetailsByTitle[item.title];
@@ -950,7 +966,7 @@ export default function Home() {
           <div className="store-list compact-stores">{shops.map((shop, index) => { const group = shopGroupById[shop.id]; const items = shoppingItems.filter((item) => item.group === group); const isHomeFood = shop.id === "xalo"; return <article className="store-card store-with-list" key={shop.id}><div className="shopping-index">{isHomeFood ? "🏠" : "🛒"}</div><div className="store-main"><small>{isHomeFood ? "MENJAR DE CASA" : `COMPRA ${String(index).padStart(2, "0")}`} · {shop.note}</small><h3>{shop.when}</h3><address>{shop.address}</address><p>{shop.items}</p><div className="store-actions"><a href={shop.map} target="_blank" rel="noreferrer">Google Maps ↗</a>{shop.web && <a href={shop.web} target="_blank" rel="noreferrer">Fitxa i horari ↗</a>}<button onClick={() => { setNewShopping((current) => ({ ...current, group })); document.getElementById("shopping-add-form")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}>+ {isHomeFood ? "Afegir menjar de casa" : "Afegir a esta compra"}</button></div><div className="store-shopping"><div className="shopping-group-head"><h4><span>{isHomeFood ? "🏠" : "🛒"}</span> {isHomeFood ? "Preparat per a carregar" : "Dins de la cistella"}</h4><b>{items.filter((item) => item.checked).length}/{items.length}</b></div>{items.length ? items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.label}`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>) : <p className="empty-state">Encara no hi ha aliments en esta llista.</p>}</div><TaskCheck id={shop.taskId} label={taskLabels[shop.taskId]} checked={!!checked[shop.taskId]} onToggle={toggleTask} compact/></div></article>; })}</div>
           <div className="subheading store-heading"><div><p className="kicker">ALTRES LLISTES</p><h3>Desdejunis, pícnics i sopars</h3></div></div>
           <div className="shopping-groups">{shoppingGroups.filter((group) => !Object.values(shopGroupById).includes(group)).map((group) => { const items = shoppingItems.filter((item) => item.group === group); if (!items.length) return null; return <section key={group}><div className="shopping-group-head"><h3><span className="basket-emoji">🛒</span>{group}</h3><span>{items.filter((item) => item.checked).length}/{items.length}</span></div>{items.map((item) => <div className={`managed-item ${item.checked ? "done" : ""}`} key={item.id}><button className="managed-toggle" onClick={() => toggleShopping(item.id)} aria-label={`${item.checked ? "Desmarcar" : "Marcar"} ${item.label}`}><span className="checkbox">{item.checked ? "✓" : ""}</span><span><b>{item.label}</b>{item.quantity && <small>{item.quantity}</small>}</span></button><div className="item-actions"><button onClick={() => editShopping(item)} aria-label={`Editar ${item.label}`}>✎</button><button onClick={() => deleteShopping(item.id)} aria-label={`Eliminar ${item.label}`}>×</button></div></div>)}</section>; })}</div>
-          <div className="menu-bank"><h3>Rotació familiar</h3><div><span>Hamburgueses + ensalada</span><span>Salmó + ensalada</span><span>Pollastre + verdura</span><span>Pizzes congelades</span><span>Llom + arròs</span><span>Pasta + tonyina</span></div></div>
+          <div className="menu-bank"><h3>Menús ja repartits</h3><div><span>Salmó + bròcoli · Dia 3</span><span>Fideus amb caldo · xiquets Dia 2</span><span>Ensalada de pasta · Dia 5</span><span>Llom + arròs · Dia 6</span><span>Ensalada completa + formatge fresc · Dia 7</span></div></div>
           <div className="allergy-note"><b>Atenció alimentària</b><p>Lluís té al·lèrgia als fruits secs i a diverses fruites. Comproveu ingredients i traces, pregunteu per la contaminació creuada, porteu la medicació accessible i manteniu separat el seu menjar de pícnic.</p></div>
         </div>}
 
@@ -975,7 +991,7 @@ export default function Home() {
 
         {tab === "reserves" && <div className="tab-panel simple-panel">
           <div className="panel-intro"><p className="kicker">RESERVES I CONTACTES</p><h2>Telefonar, reservar i arribar.</h2><p>Cada targeta permet cridar, obrir la ubicació o consultar la web. L’estat està vinculat amb els itineraris i les llistes.</p></div>
-          <div className="reservation-cards">{reservationRows.map((row) => { const contact = contactById[row.contactId]; const done = !!checked[row.taskId]; return <article className={`reservation-card ${done ? "done" : ""}`} key={row.taskId}><div className="reservation-top"><span className={`status ${done ? "confirmed" : "pending"}`}>{done ? "Completada" : "Pendent"}</span><b>{row.cost}</b></div><h3>{row.title}</h3><p>{row.date}</p><div className="reservation-actions">{contact.phone && <a href={`tel:${contact.phone}`} className="call-action">☎ {contact.phoneLabel}</a>}<a href={contact.map} target="_blank" rel="noreferrer">Maps ↗</a>{restaurantIds.has(contact.id) && <a className="review-action" href={maps(`${contact.name} ressenyes`)} target="_blank" rel="noreferrer">★ Ressenyes</a>}{contact.web && <a href={contact.web} target="_blank" rel="noreferrer">Web ↗</a>}</div><TaskCheck id={row.taskId} label={taskLabels[row.taskId]} checked={done} onToggle={toggleTask} compact/></article>; })}</div>
+          <div className="reservation-cards">{reservationRows.map((row) => { const contact = contactById[row.contactId]; const fixedConfirmed = row.state === "confirmed"; const done = fixedConfirmed || !!checked[row.taskId]; const statusLabel = fixedConfirmed ? "Confirmada" : row.state === "walkin" ? "Sense reserva" : done ? "Completada" : "Pendent"; const statusClass = fixedConfirmed || done ? "confirmed" : row.state === "walkin" ? "walkin" : "pending"; return <article className={`reservation-card ${done ? "done" : ""}`} key={row.taskId}><div className="reservation-top"><span className={`status ${statusClass}`}>{statusLabel}</span><b>{row.cost}</b></div><h3>{row.title}</h3><p>{row.date}</p><div className="reservation-actions">{contact.phone && <a href={`tel:${contact.phone}`} className="call-action">☎ {contact.phoneLabel}</a>}<a href={contact.map} target="_blank" rel="noreferrer">Maps ↗</a>{restaurantIds.has(contact.id) && <a className="review-action" href={maps(`${contact.name} ressenyes`)} target="_blank" rel="noreferrer">★ Ressenyes</a>}{contact.web && <a href={contact.web} target="_blank" rel="noreferrer">Web ↗</a>}</div>{row.contactId === "lagos" && <p className="reservation-private-note">🎟️ PDF no publicat · Gmail de Josep · correu del 14/08/2026</p>}{!fixedConfirmed && <TaskCheck id={row.taskId} label={taskLabels[row.taskId]} checked={!!checked[row.taskId]} onToggle={toggleTask} compact/>}</article>; })}</div>
           <div className="contact-section"><div className="subheading"><div><p className="kicker">ALTRES CONTACTES ÚTILS</p><h3>Base i necessitats familiars</h3></div></div><div className="places-grid">{["chigre","farmacia","naranco"].map((id) => <ContactCard key={id} contact={contactById[id]} small/>)}</div></div>
           <div className="emergency-card"><span>URGÈNCIES</span><strong>112</strong><p>Per a assistència urgent sanitària, salvament o emergència. En platja, respectar sempre bandera i socorrisme.</p><a href="tel:112">Telefonar al 112</a></div>
         </div>}
@@ -1017,7 +1033,7 @@ export default function Home() {
             <div className="expense-list">{expenses.length ? expenses.map((expense) => { const receipt = receipts.find((item) => item.expenseId === expense.id); return <article key={expense.id}><div className="expense-day"><small>DIA</small><b>{expense.day}</b></div><div className="expense-copy"><small>{expense.category}</small><h4>{expense.concept}</h4><div className="expense-meta"><span>{expense.paymentMethod}</span><span>Pagat per {expense.paidBy}</span></div>{expense.note && <p>{expense.note}</p>}</div>{receipt && <a className="receipt-thumb" href={receipt.url} target="_blank" rel="noreferrer" title="Obrir foto del tiquet"><img src={receipt.url} alt={`Tiquet de ${expense.concept}`}/><span>🧾 Tiquet</span></a>}<strong>{expense.amount.toLocaleString("ca-ES", { minimumFractionDigits: 2 })} €</strong><div className="item-actions expense-actions"><label title={receipt ? "Canviar foto del tiquet" : "Afegir foto del tiquet"}>🧾<input type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.target.files?.[0]; if (file) saveReceipt(expense.id, file).catch(() => window.alert("No s’ha pogut guardar el tiquet.")); event.target.value = ""; }} hidden/></label>{receipt && <button onClick={() => removeReceipt(receipt)} aria-label={`Eliminar tiquet de ${expense.concept}`}>⌫</button>}<button onClick={() => editExpense(expense)} aria-label={`Editar ${expense.concept}`}>✎</button><button onClick={() => deleteExpense(expense.id)} aria-label={`Eliminar ${expense.concept}`}>×</button></div></article>; }) : <p className="empty-state">Encara no has registrat cap despesa.</p>}</div>
           </section>
 
-          <section className="data-tools"><div><p className="kicker">SEGURETAT DE LES DADES</p><h3>Còpia completa, també de les fotos</h3><p>Les dades viuen en este navegador. La còpia inclou despeses, llistes, {receipts.length} tiquets ({receiptMegabytes.toFixed(1)} MB) i els {photoMemories.length} records familiars ({photoMegabytes.toFixed(1)} MB) de {totalMissionCount} missions possibles.</p></div><div className="tool-actions"><button onClick={backupData}>Guardar còpia amb fotos</button><button onClick={() => restoreInput.current?.click()}>Restaurar dades</button><button onClick={exportCsv}>Exportar despeses CSV</button><input ref={restoreInput} type="file" accept="application/json,.json" onChange={restoreData} hidden/></div></section>
+          <section className="data-tools"><div><p className="kicker">SEGURETAT DE LES DADES</p><h3>Còpia completa, també de les fotos</h3><p>Les dades viuen en este navegador. La còpia inclou despeses, llistes, {receipts.length} tiquets ({receiptMegabytes.toFixed(1)} MB) i els {photoMemories.length} records familiars ({photoMegabytes.toFixed(1)} MB) de {totalMissionCount} missions possibles. El PDF dels bitllets no s’inclou.</p></div><div className="tool-actions"><button onClick={backupData}>Guardar còpia amb fotos</button><button onClick={() => restoreInput.current?.click()}>Restaurar dades</button><button onClick={exportCsv}>Exportar despeses CSV</button><input ref={restoreInput} type="file" accept="application/json,.json" onChange={restoreData} hidden/></div></section>
         </div>}
       </section>
 
@@ -1036,7 +1052,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer><div className="brand"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></div><p>Josep, Caty, Lluís i Cesc · 16–23 d’agost</p><a href="#inici">Tornar amunt ↑</a></footer>
+      <footer><div className="brand"><span className="brand-mark">AF</span><span>AVELLÀ-FERRER <b>2026</b></span></div><p>Josep, Cati, Lluís i Cesc · 16–23 d’agost</p><a href="#inici">Tornar amunt ↑</a></footer>
 
       <nav className="mobile-nav"><button onClick={() => jump("itinerari")} className={tab === "itinerari" ? "active" : ""}><span>⌖</span>Ruta</button><button onClick={() => jump("compres")} className={tab === "compres" ? "active" : ""}><span>▤</span>Compra</button><button onClick={() => jump("maleta")} className={tab === "maleta" ? "active" : ""}><span>✓</span>Llistes</button><button onClick={() => jump("reserves")} className={tab === "reserves" ? "active" : ""}><span>☎</span>Reserves</button><button onClick={() => jump("control")} className={tab === "control" ? "active" : ""}><span>€</span>Control</button></nav>
     </main>
