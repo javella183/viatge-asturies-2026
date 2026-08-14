@@ -1021,7 +1021,7 @@ html{scroll-padding-top:82px}
 /* Les infografies són horitzontals 4:3 */
 .infographic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .infographic-preview{aspect-ratio:4/3}
-.infographic-preview img{object-fit:cover}
+.infographic-preview img{object-fit:contain;background:#f5f1e7}
 
 @media(max-width:1100px){
   .main-nav{display:none}
@@ -1068,12 +1068,12 @@ html{scroll-padding-top:82px}
 .health-principles small{display:block;color:var(--green);font-size:9px;font-weight:900;letter-spacing:.12em}
 .health-principles strong{display:block;margin-top:4px;color:var(--deep);font-size:14px;line-height:1.35}
 .health-graphic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0 42px}
-.health-graphic-card{display:grid;grid-template-columns:minmax(190px,.85fr) minmax(0,1.15fr);min-width:0;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:white;text-align:left;cursor:pointer;box-shadow:0 12px 34px rgba(11,63,56,.09);transition:.22s ease}
+.health-graphic-card{display:grid;grid-template-columns:minmax(210px,.8fr) minmax(0,1.2fr);min-width:0;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:white;text-align:left;cursor:pointer;box-shadow:0 12px 34px rgba(11,63,56,.09);transition:.22s ease}
 .health-graphic-card:focus-visible,.health-day-card>button:focus-visible,.itinerary-health>button:focus-visible{outline:3px solid var(--lime);outline-offset:3px}
 .health-graphic-card:hover{transform:translateY(-4px);border-color:#7ea99b;box-shadow:0 19px 42px rgba(11,63,56,.14)}
-.health-graphic-media{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;background:#e7efe8}
+.health-graphic-media{position:relative;display:block;aspect-ratio:1055/1491;overflow:hidden;background:#f7faf7}
 .health-graphic-media:after{content:"";position:absolute;inset:auto 0 0;height:45%;background:linear-gradient(transparent,rgba(7,39,34,.72))}
-.health-graphic-media img{width:100%;height:100%;display:block;object-fit:cover;object-position:top center;transition:transform .3s ease}
+.health-graphic-media img{width:100%;height:100%;display:block;object-fit:contain;object-position:top center;transition:transform .3s ease}
 .health-graphic-card:hover img{transform:scale(1.025)}
 .health-graphic-media b{position:absolute;z-index:2;left:13px;bottom:12px;padding:7px 9px;border-radius:4px;background:var(--lime);color:var(--deep);font-size:10px;letter-spacing:.12em}
 .health-graphic-copy{display:flex;min-width:0;flex-direction:column;padding:23px}
@@ -1114,7 +1114,7 @@ html{scroll-padding-top:82px}
 
 @media(max-width:1000px){
   .health-principles{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .health-graphic-card{grid-template-columns:155px 1fr}
+  .health-graphic-card{grid-template-columns:minmax(180px,.75fr) minmax(0,1.25fr)}
   .health-day-grid{grid-template-columns:1fr}
   .itinerary-health{grid-template-columns:1fr 1fr}
   .itinerary-health>button{grid-column:1/-1}
@@ -1124,8 +1124,8 @@ html{scroll-padding-top:82px}
 @media(max-width:700px){
   .health-principles{grid-template-columns:1fr;gap:8px;margin-top:28px}
   .health-graphic-grid{grid-template-columns:1fr;margin-bottom:30px}
-  .health-graphic-card{grid-template-columns:112px 1fr}
-  .health-graphic-media{aspect-ratio:auto;min-height:190px}
+  .health-graphic-card{display:block}
+  .health-graphic-media{width:100%;min-height:0;aspect-ratio:1055/1491}
   .health-graphic-copy{padding:17px 15px}
   .health-graphic-copy strong{font-size:22px}
   .health-graphic-copy em{font-size:13px}
@@ -1141,4 +1141,17 @@ html{scroll-padding-top:82px}
   .mobile-nav{grid-template-columns:repeat(7,1fr)}
   .mobile-nav button{font-size:8px}
   .mobile-nav button span{font-size:17px}
+}
+
+/* L'última regla del visor ha d'anar després de les mides generals de salut */
+@media(max-width:900px){
+  .health-modal-panel{width:100%;max-width:none;height:100dvh;max-height:none;border:0;border-radius:0}
+  .health-modal-panel .infographic-modal-media{display:block;overflow-x:hidden;overflow-y:auto;padding:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .health-modal-panel .infographic-modal-media img{display:block;width:100%;height:auto;max-width:none;max-height:none;object-fit:contain;box-shadow:none}
+}
+
+@media (orientation:landscape) and (max-height:600px){
+  .health-modal-panel{position:relative;width:100vw;max-width:none;height:100dvh;max-height:none;border:0;border-radius:0}
+  .health-modal-panel .infographic-modal-media{position:absolute;inset:0;display:block;overflow-x:hidden;overflow-y:auto;padding:0}
+  .health-modal-panel .infographic-modal-media img{display:block;width:100%;height:auto;max-width:none;max-height:none;object-fit:contain}
 }
